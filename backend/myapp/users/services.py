@@ -21,8 +21,8 @@ class UserService(collectionUser):
     def check_user_exists(self, email):
         user = self.user_collection.find_one({"email": email})
         if user:
-            return {"status": True, "message": "User already exists."}
-        return {"status": False, "message": "User does not exist."}
+            return {"success": True, "message": "User already exists."}
+        return {"success": False, "message": "User does not exist."}
     
     
     ## Create user
@@ -38,23 +38,23 @@ class UserService(collectionUser):
                 "is_google_account": False,
                 "created_at": datetime.now(),
             }
-            if self.check_user_exists(request_data['email'])['status']==True:
-                return {"status":False,"error": "User already exists."}
+            if self.check_user_exists(request_data['email'])['success']==True:
+                return {"success":False,"error": "User already exists."}
             if request_data["password"]:
                 hashed_password = bcrypt.hashpw(request_data["password"].encode('utf-8'), bcrypt.gensalt())
                 request_data['password'] = hashed_password.decode('utf-8')
              # Create email verification token
             token_email = create_email_token(request_data['email'])
             if not token_email:
-                return {"status": False, "error": "Failed to create email token."}
+                return {"success": False, "error": "Failed to create email token."}
             send_email = send_verify_email(request_data['email'],token_email)
             if not send_email:              
-                return {"status": False, "error": "Failed to send verification email."}
+                return {"success": False, "error": "Failed to send verification email."}
             result = self.user_collection.insert_one(request_data)
             if not result.acknowledged:
-                return {"status": False, "error": "Failed to create user."}
+                return {"success": False, "error": "Failed to create user."}
             return {
-                "status":True,
+                "success":True,
                 "message": "User created successfully", 
                 "user_id": str(result.inserted_id)
                 }
