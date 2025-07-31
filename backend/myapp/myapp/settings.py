@@ -21,7 +21,13 @@ MOGO_DB_NAME = config('MOGO_DB_NAME')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dj1+ipchu04+!n)8qixrtjwr0d=y&2$)n=0n4lpq(q3(29y6^r'
+SECRET_KEY = config('SECRET_KEY')
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = int(config('EMAIL_PORT', 587))
+EMAIL_USE_TLS = config('EMAIL_USE_TLS') == 'True'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,6 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'users',
+    'myapp', 
 ]
 
 MIDDLEWARE = [
