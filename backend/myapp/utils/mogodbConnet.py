@@ -1,6 +1,5 @@
 from pymongo import MongoClient
 from django.conf import settings
-
 MOGO_URL = settings.MOGO_URL
 MOGO_DB_NAME = settings.MOGO_DB_NAME
 class MongoDBConnection:
