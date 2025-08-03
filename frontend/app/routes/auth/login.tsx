@@ -8,7 +8,7 @@ export default function Login() {
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-[#000] gap-5">
      <div className="w-[450px] flex flex-col items-center  p-8 border border-[#353535] rounded shadow-md">
         <div className="w-[350px] h-[120px] select-none">
-            <img src="../../public/1688663419threads-logo.png" alt="logo" className="bg-white dark:bg-gray-800" />
+            <img src="../../public/1688663419threads-logo.png" alt="logo" className="bg-white rounded-[16px] dark:bg-[#fff]" />
         </div>
         <div >
            <form action="" className="flex flex-col items-center  gap-1 mt-4">

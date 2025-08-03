@@ -7,7 +7,7 @@ import {
   Links,
   isRouteErrorResponse,
 } from "react-router";
-
+import { Toaster } from "react-hot-toast";
 import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,41 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+    <Toaster
+       
+        toastOptions={{
+          style: {
+            background: "#000",
+            color: "#fff",
+            borderRadius: "8px",
+            fontSize: "16px",
+            border: "1px solid #383939",
+          },
+          success: {
+            iconTheme: {
+              primary: "#4ade80",
+              secondary: "#1d1d1d",
+            },
+          },
+          error: {
+            style: {
+              background: "black",
+              color: "#fff",
+            },
+             iconTheme: {
+              primary: "#3d3d3d",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
+    <Outlet />
+    </>
+   
+  )
+  
 }
 
 export function ErrorBoundary({ error }: { error: any }) {

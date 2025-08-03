@@ -8,4 +8,20 @@
 html,
 body {
   color: #fff;
+  background-color: #000;
+}
+
+a.active {
+  color: #fff;
+}
+a.noactive {
+  color: #4d4d4d;
+
+}
+a.pending {
+  animate: pulse 1s infinite;
+}
+
+a.transitioning {
+  /* css transition is running */
 }
