@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from .services import emailService
 from utils.jwt import decode_token
-from .services import LoginService
+from .services import LoginService, UserLogoutService, GoogoleService
 from utils.jwt import create_cookie
 import json
 # Create your views here.
@@ -42,16 +42,56 @@ class LoginView(APIView):
         login_service = LoginService()
         login_response = login_service.login(email, password)
 
-        if login_response['success']:
+        if login_response['success']: 
             access_token = login_response["access_token"]
             refresh_token = login_response["refresh_token"]
-            response = create_cookie(access_token,refresh_token)
+         
             response = JsonResponse({
                 "success": True,
                 "message": "Login successful",
                 "user_id": login_response['user_id'],
                 "role": login_response['role'],
             }, status=200)
+            response.set_cookie("access_token", access_token, httponly=True, max_age=3600)
+            response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=7*24*3600)
             return response
         else:
             return JsonResponse({"error": login_response['message']}, status=401)
+class UserLogoutView(APIView):
+    userLogoutService = UserLogoutService()
+    def post(self, request):
+        access_token = request.COOKIES.get('access_token')
+        print(access_token)
+        if not access_token:
+            return JsonResponse({"error": "Access token is required"}, status=400) 
+        try:
+            decoded_data = decode_token(access_token)
+            print(decoded_data)
+            if isinstance(decoded_data, dict) and decoded_data.get("error"):
+                return JsonResponse({"error": f"Invalid token: {decoded_data['error']}"}, status=401)
+
+            user_id = decoded_data.get('user_id')
+            if not user_id:
+                return JsonResponse({"error": "User ID not found in token"}, status=400)
+ 
+            self.userLogoutService.logout(user_id) 
+            response = JsonResponse({"success": True, "message": "Logout successful"}, status=200)
+            response.delete_cookie('refresh_token')
+            response.delete_cookie("access_token")
+            return response
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+class GoogleLoginView(APIView):
+    def post(self, request):
+        access_token = request.data.get('access_token')
+        if not access_token:
+            return JsonResponse({"error": "Access token is required"}, status=400)
+
+        google_service = GoogoleService()
+        response = google_service.create_user(access_token)
+        
+        if response['success']:
+            return JsonResponse({"message": response}, status=200)
+        
+        return JsonResponse({"error": "Invalid request"}, status=400)   
