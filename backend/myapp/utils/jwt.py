@@ -73,7 +73,7 @@ def create_cookie(access_token,refresh_token):
     response.set_cookie(
         key='refresh_token',
         value=refresh_token,
-        #httponly=True,
+        httponly=True,
         secure=False, 
         samesite=None,
         #domain=None,
@@ -83,9 +83,8 @@ def create_cookie(access_token,refresh_token):
         key='access_token',
         value=access_token,
         secure=False,  # tạm để False nếu đang test local
-        httponly=False,  # nếu muốn client JS đọc được
         samesite="Lax",
-        #httponly=True,      
+        httponly=True,      
         #secure=True,       
         #samesite=None,  
         #domain=None,
