@@ -84,7 +84,8 @@ class LoginService(collection):
                             "message": "login success",
                             "access_token": dataSession['Access_Token'],
                             "refresh_token":dataSession['Refresh_Token'],
-                            "user_id": str(user['_id'])
+                            "user_id": str(user['_id']),
+                            "role": user['role']
                         } 
             return {"success": False, "message": "Invalid email or password."}
         except Exception as e:
