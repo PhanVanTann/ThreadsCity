@@ -1,159 +1,109 @@
-import { useState } from "react";
-import { FaImages } from "react-icons/fa6";
-import { FaRegSmile } from "react-icons/fa";
-import EmojiPicker from "../../app/components/emojipick";
+import React, { useState } from 'react';
+import { AiOutlineMore } from 'react-icons/ai';
 
-import toast from "react-hot-toast";
-export default function Post({ open, onClose }: { open: boolean; onClose: () => void }) {
-      const [files, setFiles] = useState<File[]>([]);
-      const [showPicker, setShowPicker] = useState(false);
-      const [content, setContent] = useState("");
-        
-      
-      const handleEmojiClick = (emoji: any) => {
-            setContent((prev) => prev + emoji.emoji);
-        };
-    
-    
-    
-    if (!open) return null;
+type Post = {
+  id: string;
+  user_id: string;
+  text: string;
+  media: string[];
+  flag: boolean;
+  total_love: number;
+  total_comment: number;
+  created_at: string;
+};
 
+const usertest = {
+  id: "64e3d54e8b7c5e3f20a1b001",
+  role: "user",
+  first_name: "Linh",
+  last_name: "Nguyễn",
+  Email: "linh.nguyen@example.com",
+  avatar_image: "https://i.pravatar.cc/150?img=3",
+  is_google_account: false,
+  number: "0987654321",
+  created_at: "2025-08-01T10:15:00Z",
+  follow: 12,
+  is_verify: true,
+};
 
-    return (
-   <div className="fixed inset-0 bg-black/30 bg-blend-60 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-[#181818] border-2 border-[#383939] rounded-lg w-[700px] shadow-lg relative">
-        <div className="flex justify-between items-center border-b-2  border-[#383939] p-3">
+export default function Post({ post }: { post: Post }) {
+  const [current, setCurrent] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  const next = () => setCurrent((prev) => (prev + 1) % post.media.length);
+  const prev = () =>
+    setCurrent((prev) => (prev === 0 ? post.media.length - 1 : prev - 1));
+
+  const currentMedia = post.media[current];
+  const isVideo = currentMedia.endsWith(".mp4");
+
+  return (
+    <div className="w-[700px] flex flex-col items-center mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-gray-300 rounded-lg p-4">
+      {/* Header */}
+      <div className="flex w-full items-center">
+        <img
+          src={usertest.avatar_image}
+          alt="avatar"
+          className="object-cover rounded-full w-[40px] h-[40px] mr-2"
+        />
+        <div className="flex-grow flex items-center">
+          <span className="text-white font-bold mr-2">
+            {usertest.first_name} {usertest.last_name}
+          </span>
+          {isFollowing ? (
+            <button className="text-white">Đang theo dõi</button>
+          ) : (
             <button
-                    className=" text-white cursor-pointer"
-                    onClick={onClose}
-                    >
-                    Đóng
+              className="text-white hover:underline"
+              onClick={() => setIsFollowing(true)}
+            >
+              Theo dõi
             </button>
-            <h2 className="text-lg font-bold ">Đăng bài mới</h2>
-            <div></div>
+          )}
         </div>
-          <div className="flex items-center p-4 border-b-2 border-[#383939]">
-                <img
-                src="../../public/z4278794679219_881d17bfbc15d3071b7720cfd3f0283c.jpg" // Replace with actual avatar path
-                alt="avatar"
-                className="object-cover rounded-[50%] w-[40px] h-[40px]  mr-3"
-                />
-                <span className="text-gray-700 dark:text-white font-bold">Username</span>
-                
-            </div>
-        {files.length > 0 && (
-            <div className="p-4 flex gap-4 flex-wrap">
-                {files.map((file, idx) =>
-                file.type.startsWith("image/") ? (
-                    <img
-                    key={idx}
-                    src={URL.createObjectURL(file)}
-                    alt={`Selected ${idx}`}
-                    className="w-[150px] h-auto rounded-lg mb-4 cursor-pointer"
-                    onContextMenu={e => {
-                        e.preventDefault();
-                        setFiles(files => files.filter((_, i) => i !== idx));
-                    }}
-                    title="Nhấn chuột phải để xóa ảnh"
-                    />
-                ) : file.type.startsWith("video/") ? (
-                    <video
-                    key={idx}
-                    src={URL.createObjectURL(file)}
-                    controls
-                    className="w-[150px] h-auto rounded-lg mb-4 cursor-pointer"
-                    onContextMenu={e => {
-                        e.preventDefault();
-                        setFiles(files => files.filter((_, i) => i !== idx));
-                    }}
-                    title="Nhấn chuột phải để xóa video"
-                    />
-                ) : null
-                )}
-            </div>
-            )}
-        <form>
-            <div className="flex">   
-                     <label
-                    htmlFor="file-upload"
-                    className="flex  dark:text-[#4d4d4d] cursor-pointer items-center gap-2 cursor-pointer w-[30px] m-2  rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535] bg-[#f5f5f5] dark:bg-[#222]"
-                        >
-                        <FaImages size={30} />
-                    
-                </label>
-                        <input
-                            id="file-upload"
-                            type="file"
-                            className="hidden"
-                            multiple
-                              title="Chọn ảnh hoặc video"
-                            onChange={async (e) => {
-                                const fileList = e.target.files;
-                                if (fileList && fileList.length > 0) {
-                                    const filesArr = Array.from(fileList);
-                                    const validFiles: File[] = [];
-                                    for (const file of filesArr) {
-                                    if (file.type.startsWith("video/")) {
-                                        const url = URL.createObjectURL(file);
-                                        const video = document.createElement("video");
-                                        video.src = url;
-                                        await new Promise<void>((resolve) => {
-                                        video.onloadedmetadata = () => {
-                                            if (video.duration <= 10) { // Giới hạn 30 giây
-                                            validFiles.push(file);
-                                            } else {
-                                            toast.error("video chỉ được tối đa 30s!");
-                                            }
-                                            URL.revokeObjectURL(url);
-                                            resolve();
-                                        };
-                                        });
-                                    } else {
-                                        validFiles.push(file);
-                                    }
-                                    }
-                                    setFiles(prev => [...prev, ...validFiles]);
-                                }
-                            }}
-                        />
-            <button
-                    type="button"
-                    className=" text-xl dark:text-[#4d4d4d] cursor-pointer"
-                    onClick={() => setShowPicker(v => !v)}
-                    tabIndex={-1}
-                    title="Chọn emoji"
-                    >
-                    <FaRegSmile size={28}/>
-            </button>
-            </div>
-               
-          <textarea
-            className="w-full h-24 p-2  rounded resize-none mb-4 focus:outline-none focus:ring-0 focus:border-[#353535]   text-gray-700 dark:text-white"
-            placeholder="Bạn đang nghĩ gì?"
-            value={content}
-            onChange={e => setContent(e.target.value)}
-          />
-           {/* {showPicker && (
-            
-            <div className="absolute right-[-400px] bottom-0 z-10">
-                <EmojiPicker
-                onEmojiClick={handleEmojiClick}
-                theme="dark"
-                width={500}
-                height={450}
-                />
+        <div className="p-2 text-white cursor-pointer">
+          <AiOutlineMore size={20} />
+        </div>
+      </div>
 
-            </div>
-            
-            )} */}
-            {showPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
-          <button
-            type="submit"
-            className="bg-black mb-4 ml-4 text-white px-4 py-2 border-2 border-[#383939] rounded-[15px] hover:bg-black/80 transition-colors"
-          >
-            Đăng bài
-          </button>
-        </form>
+      {/* Content */}
+      <p className="text-sm text-gray-300">
+        {new Date(post.created_at).toLocaleString("vi-VN")}
+      </p>
+      <p className="text-lg font-medium text-white">{post.text}</p>
+
+      {/* Media */}
+      <div className="relative w-full">
+        {isVideo ? (
+          <video controls className="w-full rounded-lg">
+            <source src={currentMedia} type="video/mp4" />
+            Trình duyệt không hỗ trợ video.
+          </video>
+        ) : (
+          <img
+            src={currentMedia}
+            alt="media"
+            className="w-full rounded-lg object-cover"
+          />
+        )}
+
+        {/* Nút chuyển */}
+        {post.media.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full p-2"
+            >
+              ‹
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white rounded-full p-2"
+            >
+              ›
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

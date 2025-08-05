@@ -2,7 +2,7 @@ import { useState, useRef,useEffect } from "react";
 import EmojiPicker from "emoji-picker-react";
 
 export default function EmojiPopup({ onEmojiClick }: { onEmojiClick: (emoji: any) => void }) {
-  const [position, setPosition] = useState({ x: 100, y: 100 });
+  const [position, setPosition] = useState({ x: 700, y: -60 });
   const [dragging, setDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
 
@@ -54,7 +54,7 @@ export default function EmojiPopup({ onEmojiClick }: { onEmojiClick: (emoji: any
       {/* Thanh kéo */}
       <div
         onMouseDown={handleMouseDown}
-        className="bg-gray-300 dark:bg-gray-700 p-2 text-center text-sm font-bold text-black dark:text-white"
+        className="bg-white dark:bg-[#222222] p-2 text-center text-sm font-bold text-black dark:text-white"
       >
         Kéo để di chuyển
       </div>
@@ -64,7 +64,7 @@ export default function EmojiPopup({ onEmojiClick }: { onEmojiClick: (emoji: any
         onEmojiClick={onEmojiClick}
         theme="dark"
         width={400}
-        height={300}
+        height={500}
       />
     </div>
   );
