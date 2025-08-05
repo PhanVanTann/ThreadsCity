@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['non_violence', 'scam', 'violence', 'weapon', 'wound']
+
+roboflow:
+  workspace: yolo-test-f7tji
+  project: content-detection-iwg9u
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/yolo-test-f7tji/content-detection-iwg9u/dataset/1
