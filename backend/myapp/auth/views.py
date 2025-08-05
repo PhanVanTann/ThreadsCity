@@ -46,8 +46,12 @@ class LoginView(APIView):
             access_token = login_response["access_token"]
             refresh_token = login_response["refresh_token"]
             response = create_cookie(access_token,refresh_token)
-            response.content = json.dumps(login_response) 
-            response['Content-Type'] = 'application/json'
-            return JsonResponse(login_response, status=200)
+            response = JsonResponse({
+                "success": True,
+                "message": "Login successful",
+                "user_id": login_response['user_id'],
+                "role": login_response['role'],
+            }, status=200)
+            return response
         else:
             return JsonResponse({"error": login_response['message']}, status=401)
