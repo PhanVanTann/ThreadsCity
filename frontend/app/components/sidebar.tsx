@@ -13,7 +13,7 @@ export default function Sidebar() {
     setOpenMenu(!openMenu);
   }
   return (
-    <div className="fixed ">
+    <div className="fixed z-50">
     <div className="flex flex-col  items-center justify-between  h-screen w-[80px] bg-black text-white p-5">
       <div className="">
           <NavLink to="/" end 

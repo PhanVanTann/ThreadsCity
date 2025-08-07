@@ -3,11 +3,12 @@ import Sidebar from "~/components/sidebar";
 
 export default function DashboardLayout() {
   return (
-    <div className="flex h-screen ">
+    <div className="flex h-screen realative"> 
       <Sidebar />
       <div className="flex flex-col flex-1">
         {/* <Header /> */}
         <main className=" ml-[80px] flex-1 flex  justify-center ">
+          
           <Outlet />
         </main>
       </div>

@@ -20,7 +20,7 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
 
 
     return (
-   <div className="fixed inset-0 bg-black/30 bg-blend-60 flex items-center justify-center z-50">
+   <div className="fixed inset-0 bg-black/30 bg-blend-60 flex items-center justify-center z-100">
       <div className="bg-white dark:bg-[#181818] border-2 border-[#383939] rounded-lg w-[700px] shadow-lg relative">
         <div className="flex justify-between items-center border-b-2  border-[#383939] p-3">
             <button

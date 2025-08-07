@@ -1,49 +1,9 @@
 import { RiSearch2Line } from "react-icons/ri";
-
+import {usertest } from '../datatest'; // Adjust the import path as necessary
 
 export default function Search() {
  
-  const usertest =[
-  {
-    "id": "64e3d54e8b7c5e3f20a1b001",
-    "role": "user",
-    "first_name": "Linh",
-    "last_name": "Nguyễn",
-    "Email": "linh.nguyen@example.com",
-    "avatar_image": "https://i.pravatar.cc/150?img=3",
-    "is_google_account": false,
-    "number": "0987654321",
-    "created_at": "2025-08-01T10:15:00Z",
-    "follow": 12,
-    "is_verify": true
-  },
-  {
-    "id": "64e3d54e8b7c5e3f20a1b002",
-    "role": "admin",
-    "first_name": "Tuấn",
-    "last_name": "Phạm",
-    "Email": "tuan.pham@example.com",
-    "avatar_image": "https://i.pravatar.cc/150?img=5",
-    "is_google_account": true,
-    "number": "0912345678",
-    "created_at": "2025-07-15T14:00:00Z",
-    "follow": 105,
-    "is_verify": true
-  },
-  {
-    "id": "64e3d54e8b7c5e3f20a1b003",
-    "role": "user",
-    "first_name": "Minh",
-    "last_name": "Lê",
-    "Email": "minh.le@example.com",
-    "avatar_image": "https://i.pravatar.cc/150?img=8",
-    "is_google_account": false,
-    "number": "0934567890",
-    "created_at": "2025-08-03T09:30:00Z",
-    "follow": 34,
-    "is_verify": false
-  }
-]
+  
 
   return (
     <div className="w-[600px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] h-screen bg-gray-100 dark:bg-[#181818] gap-5">
