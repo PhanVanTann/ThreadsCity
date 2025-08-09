@@ -79,6 +79,8 @@ class LoginService(collection):
     def login(self, email, password):
         try:
             user = self.user_collection.find_one({"email": email})
+            if user.get("is_google_account", True):
+                return {"success": False, "message": "Please login with Google account."}
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
                 if not user.get("is_verified", False):
                     return {"success": False, "message": "Email not verified."}

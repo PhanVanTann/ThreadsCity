@@ -92,6 +92,17 @@ class GoogleLoginView(APIView):
         response = google_service.create_user(access_token)
         
         if response['success']:
-            return JsonResponse({"message": response}, status=200)
+            access_token = response["access_token"]
+            refresh_token = response["refresh_token"]
+         
+            response = JsonResponse({
+                "success": True,
+                "message": "Login successful",
+                "user_id": response['user_id'],
+                "role": response['role'],
+            }, status=200)
+            response.set_cookie("access_token", access_token, httponly=True, max_age=3600)
+            response.set_cookie("refresh_token", refresh_token, httponly=True, max_age=7*24*3600)
+            return response
         
         return JsonResponse({"error": "Invalid request"}, status=400)   
