@@ -1,5 +1,5 @@
 from django.urls import path,include
 from .views import *
 urlpatterns = [
-    path('', UserView.as_view(), name='craete_user'),
+    path('imagecensorship/', ImageCensorshipView.as_view(), name='craete_user'),
 ] 
