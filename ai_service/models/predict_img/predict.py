@@ -5,9 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 import cv2
 
 models = {
-    "weapon": YOLO("models/predict_img/yolo_weapon/runs/train3/weights/best.pt"),
-    "violence": YOLO("models/predict_img/yolo_violence/runs/detect/train/weights/best.pt"),
-    "blood": YOLO("models/predict_img/yolo_blood/runs/detect/train/weights/best.pt"),
+    "weapon": YOLO("models/predict_img/yolo_weapon/runs/train/weights/best.pt"),
+    "violence": YOLO("models/predict_img/yolo_violence/runs/train/weights/best.pt"),
+    "blood": YOLO("models/predict_img/yolo_blood/runs/train/weights/best.pt"),
 }
 
 def run_model(model, frame):
