@@ -34,6 +34,7 @@ class UserService(collectionUser):
                 "first_name": user_data.get("first_name"),
                 "last_name": user_data.get("last_name"),
                 "role": "user",
+                "avatar":None,
                 "is_verified": False,
                 "is_google_account": False,
                 "created_at": datetime.now(),
