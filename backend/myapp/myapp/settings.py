@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'user_auth',
     'users',
     'myapp', 
+    'post',
 ]
 
 MIDDLEWARE = [
