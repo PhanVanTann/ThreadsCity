@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'users',
     'myapp', 
     'post',
-    'chat'
+    'chat',
+    'friend',
 ]
 
 MIDDLEWARE = [
