@@ -47,19 +47,22 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
+    'rest_framework',  
     'cloudinary',
+    'channels',
     'cloudinary_storage',
     'user_auth',
     'users',
     'myapp', 
     'post',
+    'chat'
 ]
 
 MIDDLEWARE = [
@@ -92,7 +95,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'myapp.wsgi.application'
+ASGI_APPLICATION = "myapp.asgi.application" 
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
