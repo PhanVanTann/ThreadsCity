@@ -6,7 +6,7 @@ export default function Search() {
   
 
   return (
-    <div className="w-[600px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] h-screen bg-gray-100 dark:bg-[#181818] gap-5">
+    <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] h-screen bg-gray-100 dark:bg-[#181818] gap-5">
      
         <form className=" w-full h-[60px] p-5">
              <div className="relative w-full">
@@ -30,7 +30,7 @@ export default function Search() {
               alt="avatar"
               className="object-cover rounded-full w-[40px] h-[40px] mr-2"
             />
-            <div className="w-[430px]">
+            <div className="w-[530px]">
               <span className="text-white font-bold">{user.first_name} {user.last_name}</span>
               <p className="text-gray-400 text-sm">Đề xuất cho bạn</p>
               <p className="text-gray-500 text-sm"> {user.follow} người theo dõi</p>

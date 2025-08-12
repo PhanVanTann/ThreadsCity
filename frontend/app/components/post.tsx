@@ -1,8 +1,11 @@
+'use client';
 import React, { useState } from 'react';
 import { AiOutlineMore } from 'react-icons/ai';
 import  {formatTimeAgo}  from '../utils/formatIimeAgo'; // Adjust the import path as necessary
 import HeartButton from './heart';
 import CommentList from './commentList';
+import { FaRegComment } from 'react-icons/fa';
+import totalComments from './commentList';
 import { mockComments,usertest } from '../datatest'; // Adjust the import path as necessary
 // Assuming you have a utility function for formatting time
 type Post = {
@@ -35,7 +38,8 @@ export default function Post({ post }: { post: Post }) {
   const [current, setCurrent] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
-
+  const [openComment, setOpenComment] = useState(false);
+  
   const handleReply = (text: string, parentId: string) => {
     console.log("Reply to:", parentId, "with text:", text);
     // Gửi request tạo comment mới tại đây nếu có backend
@@ -62,19 +66,19 @@ const prev = () => {
 
   const currentMedia = post.media[current];
   const isVideo = currentMedia.endsWith(".mp4");
-  const user = usertest.find((u) => u.id === post.user_id);
+  const User = usertest.find((u) => u.id === post.user_id);
   return (
     <div className="w-[700px] flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
       <div className="flex w-full items-center">
         <img
-          src={user?.avatar_image}
+          src={ "https://i.pravatar.cc/150?img=1"} // Replace with actual avatar path
           alt="avatar"
           className="object-cover rounded-full w-[40px] h-[40px] mr-2"
         />
         <div className="flex-grow flex items-center">
           <span className="text-white font-bold mr-2">
-            {user?.first_name} {user?.last_name}
+            {User?.first_name} {User?.last_name}
           </span>
           <span className=" text-sm text-gray-300 mr-2">
                 {formatTimeAgo(post.created_at)}
@@ -151,9 +155,20 @@ const prev = () => {
 
       </div>
       <div>
-         <HeartButton postId={post.id} size='text-xl' userId={id} />
-         {post.id==mockComments[0].post_id && (
-          <CommentList comments={mockComments} onReply={handleReply} />
+        <div className='flex gap-5'>
+            <HeartButton postId={post.id} size='text-xl'  />
+        <div className='flex items-center gap-1 text-gray-300'>
+          <button title='a' className='text-gray-300  h-[20px]' onClick={()=>setOpenComment(!openComment)}>
+                      <FaRegComment size={20}/>
+                    
+                      </button>
+                   <span className='text-[20px]'> {post.total_comment}</span>  
+        </div>
+          
+        </div>
+       
+         {openComment && post.id==mockComments[0].post_id && (
+          <CommentList postId={post.id} comments={mockComments} onReply={handleReply} />
           )}
           
          

@@ -1,3 +1,4 @@
+'use client';
 import { useState, useRef,useEffect } from "react";
 import EmojiPicker from "emoji-picker-react";
 
@@ -5,7 +6,7 @@ export default function EmojiPopup({ onEmojiClick }: { onEmojiClick: (emoji: any
   const [position, setPosition] = useState({ x: 700, y: -60 });
   const [dragging, setDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
-
+  const [isOpen, setIsOpen] = useState(false); 
   const handleMouseDown = (e: React.MouseEvent) => {
     setDragging(true);
     dragStartPos.current = {
@@ -24,7 +25,11 @@ export default function EmojiPopup({ onEmojiClick }: { onEmojiClick: (emoji: any
   };
 
   const handleMouseUp = () => setDragging(false);
-
+  const toggleEmojiPicker = () => {
+      if (!isOpen) {
+        setIsOpen(true); // Mở Emoji Picker
+      }
+    };
   // Gắn sự kiện toàn cục
   useEffect(() => {
     if (dragging) {
@@ -58,14 +63,16 @@ export default function EmojiPopup({ onEmojiClick }: { onEmojiClick: (emoji: any
       >
         Kéo để di chuyển
       </div>
-
-      {/* Emoji Picker */}
-      <EmojiPicker
-        onEmojiClick={onEmojiClick}
-        theme="dark"
-        width={400}
-        height={500}
-      />
+      {!isOpen && (
+        <div>
+          <EmojiPicker
+            onEmojiClick={onEmojiClick}
+            theme="dark"
+            width={400}
+            height={500}
+          />
+        </div>
+      )}
     </div>
   );
 }

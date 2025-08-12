@@ -1,8 +1,9 @@
+'use client';
 import { useState } from "react";
 import { FaImages } from "react-icons/fa6";
 import { FaRegSmile } from "react-icons/fa";
-import EmojiPicker from "./emojipick";
-
+// import EmojiPicker from "./emojipick";
+import EmojiPopup from "./emojipick";
 import toast from "react-hot-toast";
 export default function Postmodel({ open, onClose }: { open: boolean; onClose: () => void }) {
       const [files, setFiles] = useState<File[]>([]);
@@ -14,7 +15,37 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
             setContent((prev) => prev + emoji.emoji);
         };
     
-    
+    async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!content.trim() && files.length === 0) {
+      toast.error("Vui lòng nhập nội dung hoặc chọn media");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("content", content);
+    files.forEach(f => fd.append("files", f));  // KEY "files" khớp backend
+
+    try {
+      const res = await axiosInstance.post("/posts/", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true, // nếu dùng cookie HttpOnly
+        onUploadProgress: (p) => {
+          // tui thêm demo progress nếu bạn muốn
+          // const percent = Math.round((p.loaded * 100) / (p.total ?? 1));
+          // setProgress(percent);
+        }
+      });
+      toast.success("Đăng bài thành công!");
+      // Optional: clear form
+      setContent("");
+      setFiles([]);
+      onClose();
+    } catch (err) {
+      console.error(err);
+      toast.error("Đăng bài thất bại!");
+    }
+  }
     
     if (!open) return null;
 
@@ -86,7 +117,8 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
                             type="file"
                             className="hidden"
                             multiple
-                              title="Chọn ảnh hoặc video"
+                            accept="image/*,video/*" 
+                            title="Chọn ảnh hoặc video"
                             onChange={async (e) => {
                                 const fileList = e.target.files;
                                 if (fileList && fileList.length > 0) {
@@ -133,20 +165,8 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
             value={content}
             onChange={e => setContent(e.target.value)}
           />
-           {/* {showPicker && (
-            
-            <div className="absolute right-[-400px] bottom-0 z-10">
-                <EmojiPicker
-                onEmojiClick={handleEmojiClick}
-                theme="dark"
-                width={500}
-                height={450}
-                />
-
-            </div>
-            
-            )} */}
-            {showPicker && <EmojiPicker onEmojiClick={handleEmojiClick} />}
+         
+            {showPicker && <EmojiPopup onEmojiClick={handleEmojiClick} />}
           <button
             type="submit"
             className="bg-black mb-4 ml-4 text-white px-4 py-2 border-2 border-[#383939] rounded-[15px] hover:bg-black/80 transition-colors"

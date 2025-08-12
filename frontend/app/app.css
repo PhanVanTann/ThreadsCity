@@ -33,3 +33,24 @@ a.transitioning {
   .fade-out {
     opacity: 0;
   }
+  /* Thanh cuộn ngang/dọc chung */
+::-webkit-scrollbar {
+  width: 8px;       /* độ rộng dọc */
+  height: 8px;      /* độ cao ngang */
+}
+
+/* Nền track */
+::-webkit-scrollbar-track {
+  background: transparent; /* hoặc màu khác */
+}
+
+/* Thanh kéo */
+::-webkit-scrollbar-thumb {
+  background-color: #424242; /* màu chính */
+  border-radius: 4px;        /* bo góc */
+}
+
+/* Hover vào thanh kéo */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #969797;
+}

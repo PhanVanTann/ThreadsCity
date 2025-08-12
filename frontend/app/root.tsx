@@ -10,6 +10,7 @@ import {
 import { Toaster } from "react-hot-toast";
 import "./app.css";
 
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -31,8 +32,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
-    <Toaster
        
+  <Toaster
         toastOptions={{
           style: {
             background: "#000",
@@ -60,6 +61,9 @@ export default function App() {
         }}
       />
     <Outlet />
+      
+  
+    
     </>
    
   )

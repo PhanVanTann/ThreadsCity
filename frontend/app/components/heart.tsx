@@ -1,9 +1,10 @@
+'use client';
 import { useState } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { motion } from "framer-motion";
 import axios from "axios";
 
-export default function HeartButton({ postId, userId,size }: { postId: string, userId: string,size:string }) {
+export default function HeartButton({ postId,size }: { postId: string,size:string }) {
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(0);
   const [animate, setAnimate] = useState(false);

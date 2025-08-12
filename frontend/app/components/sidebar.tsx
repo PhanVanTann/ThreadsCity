@@ -1,14 +1,15 @@
+'use client';
 import { useState } from "react";
 import { FaThreads,FaPlus,FaRegHeart } from "react-icons/fa6";
 import { RiHome4Line,RiSearch2Line,RiMenu4Fill } from "react-icons/ri";
 import Logout from "./logout";
 import { BsPerson } from "react-icons/bs";
-import { NavLink } from "react-router";
+import { NavLink, useParams } from "react-router";
 import Post from "./postmodel";
 export default function Sidebar() {
     const [openPost, setOpenPost] = useState(false);
     const [openMenu, setOpenMenu] = useState(false);
-
+    // const userId = localStorage.getItem("user_id")  || "";
   const handleOpenmenu = () => {
     setOpenMenu(!openMenu);
   }
@@ -18,7 +19,7 @@ export default function Sidebar() {
       <div className="">
           <NavLink to="/" end 
                 >
-                <div className="px-3 py-2 mt-4 rounded-lg hover:bg-[#1d1d1d] hover:text-white transition-colors">     
+                <div className="px-3 py-2  rounded-lg  hover:text-white transition-colors">     
                    <FaThreads  className="transition duration-200 hover:scale-125"  size={40}/>
                </div>
               
@@ -74,7 +75,7 @@ export default function Sidebar() {
                </div>
             </NavLink>
             {/* profile */}
-               <NavLink to="/profile"end className={({ isActive, isPending, isTransitioning }) =>
+               <NavLink to={`/profile/:userId`} end className={({ isActive, isPending, isTransitioning }) =>
                     [
                       isPending ? "pending" : "",
                       isActive ? "active" : "noactive",

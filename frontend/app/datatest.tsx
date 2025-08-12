@@ -33,7 +33,7 @@ export const mockComments = [
   {
     _id: "cmt1",
     post_id: "64e3d61a8b7c5e3f20a1b101",
-    user_id: "user1",
+    user_id: "64e3d54e8b7c5e3f20a1b003",
     parent_id: null,
     text: "Bài viết rất hay!",
     created_at: "2025-08-07T14:03:00+07:00",
@@ -42,7 +42,7 @@ export const mockComments = [
   {
     _id: "cmt2",
     post_id: "64e3d61a8b7c5e3f20a1b101",
-    user_id: "user2",
+    user_id: "64e3d54e8b7c5e3f20a1b003",
     parent_id: "cmt1",
     text: "Mình cũng thấy vậy!",
     created_at: "2025-08-07T10:45:00Z",
@@ -51,7 +51,7 @@ export const mockComments = [
   {
     _id: "cmt3",
     post_id: "64e3d61a8b7c5e3f20a1b101",
-    user_id: "user3",
+    user_id: "64e3d54e8b7c5e3f20a1b003",
     parent_id: null,
     text: "Có phần nào cần bổ sung không?",
     created_at: "2025-08-07T11:00:00Z",
@@ -60,7 +60,7 @@ export const mockComments = [
   {
     _id: "cmt4",
     post_id: "64e3d61a8b7c5e3f20a1b101",
-    user_id: "user1",
+    user_id: "64e3d54e8b7c5e3f20a1b003",
     parent_id: "cmt3",
     text: "Theo mình thì phần kết luận hơi ngắn.",
     created_at: "2025-08-07T11:10:00Z",
@@ -69,8 +69,8 @@ export const mockComments = [
   {
     _id: "cmt5",
     post_id: "64e3d61a8b7c5e3f20a1b101",
-    user_id: "user4",
-    parent_id: "cmt4",
+    user_id: "64e3d54e8b7c5e3f20a1b003",
+    parent_id: "cmt1",
     text: "Đúng rồi, nên thêm phần tổng kết chi tiết hơn. djiwoadaowidoadiahd ihdiwoaihsdkj jdkwnaksjndoia jndkandiwodnsjan jdknwaiosdon lwnkdlnkwlandisnf nakldwijdolsakdnklnw dlnwidjksannjbfajbfj jdakwhho in nư n",
     created_at: "2025-08-07T11:15:00Z",
     interact: 4,
