@@ -19,10 +19,11 @@ from django.urls import path,include
 from user_auth import urls as auth_urls
 from users import urls as user_urls
 from post import urls as post_urls
-
+from chat import urls as chat_urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include(auth_urls.urlpatterns)), 
     path('users/', include(user_urls.urlpatterns)),
     path('post/', include(post_urls.urlpatterns)),
+    path('chat/',include(chat_urls.urlpatterns)),
 ]
