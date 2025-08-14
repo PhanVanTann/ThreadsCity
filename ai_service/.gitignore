@@ -2,5 +2,4 @@
 __pycache__/
 *.py[cod]
 venv/
-best_model/
-models/predict_text/best_model/
+ai_service/models/predict_text/best_model/
