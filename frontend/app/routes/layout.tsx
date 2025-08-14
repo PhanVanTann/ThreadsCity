@@ -3,7 +3,7 @@ import Message from "~/components/message";
 import Sidebar from "~/components/sidebar";
 // import { AuthProvider } from "~/context/authContext";
 
-export default function rootLayout() {
+export default function RootLayout() {
   return (
   //  <AuthProvider>
     <div className="flex h-screen realative"> 

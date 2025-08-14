@@ -22,30 +22,57 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
       return;
     }
 
+   
     const fd = new FormData();
-    fd.append("content", content);
-    files.forEach(f => fd.append("files", f));  // KEY "files" khớp backend
+fd.append("content", content);
+files.forEach((f) => fd.append("files", f)); // hoặc "files[]", tùy backend
 
-    try {
-      const res = await axiosInstance.post("/posts/", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true, // nếu dùng cookie HttpOnly
-        onUploadProgress: (p) => {
-          // tui thêm demo progress nếu bạn muốn
-          // const percent = Math.round((p.loaded * 100) / (p.total ?? 1));
-          // setProgress(percent);
-        }
-      });
-      toast.success("Đăng bài thành công!");
-      // Optional: clear form
-      setContent("");
-      setFiles([]);
-      onClose();
-    } catch (err) {
-      console.error(err);
-      toast.error("Đăng bài thất bại!");
-    }
+// Log nhanh state (trước khi gửi)
+console.log("Payload preview:", {
+  content,
+  files: files.map((f) => ({
+    name: f.name,
+    type: f.type,
+    size: f.size,
+  })),
+});
+
+// Log FormData chuẩn
+for (const [key, value] of fd.entries()) {
+  if (value instanceof File) {
+    console.log("FD:", key, {
+      name: value.name,
+      type: value.type,
+      size: value.size,
+    });
+  } else {
+    console.log("FD:", key, value);
   }
+}
+
+// Nếu cần kiểm tra riêng mảng files
+console.log("FD files[]:", fd.getAll("files"));
+
+  //   try {
+  //     const res = await axiosInstance.post("/posts/", fd, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //       withCredentials: true, // nếu dùng cookie HttpOnly
+  //       onUploadProgress: (p) => {
+  //         // tui thêm demo progress nếu bạn muốn
+  //         // const percent = Math.round((p.loaded * 100) / (p.total ?? 1));
+  //         // setProgress(percent);
+  //       }
+  //     });
+  //     toast.success("Đăng bài thành công!");
+  //     // Optional: clear form
+  //     setContent("");
+  //     setFiles([]);
+  //     onClose();
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error("Đăng bài thất bại!");
+  //   }
+   }
     
     if (!open) return null;
 
@@ -103,7 +130,7 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
                 )}
             </div>
             )}
-        <form>
+        <form onSubmit={handleSubmit}>
             <div className="flex">   
                      <label
                     htmlFor="file-upload"
@@ -177,4 +204,4 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
       </div>
     </div>
   );
-}
+    }
