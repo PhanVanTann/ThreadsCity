@@ -4,6 +4,7 @@ from datetime import datetime
 from utils.mogodbConnet import mongo
 from django.conf import settings
 from bson import ObjectId
+from concurrent.futures import ThreadPoolExecutor
 
 class collection:
     def __init__(self):
@@ -38,16 +39,39 @@ class CensorshipService(collection):
                 "postid": postid,
                 "error": str(e)
             }
-        
+    def text_censorship(self,text,postid):
+        try:
+            result = requests.post('http://127.0.0.1:8001/ai/predict_text',json={
+                "text":text,
+                "postid":postid
+            })
+            return {"success": True, "message": "text censorship completed successfully", "data": result.json()}
+        except Exception as e:
+            return {
+                "message": "Error in image censorship",
+                "postid": postid,
+                "error": str(e)
+            }
     def create_post(self, data):
-        print(settings.CLOUD_NAME, settings.API_KEY, settings.API_SECRET)
-        media_file = data.get("media") 
-        upload_result = cloudinary.uploader.upload(media_file,resource_type="auto")
-        media_url = upload_result.get("secure_url")
+        user_id = data.get("user_id")
+        text_content = (data.get("text") or "").strip()
+        media_file = data.get("media")
+
+        # Upload media (nếu có) và xác định loại
+        media_url = None
+        media_type = None
+        if media_file:
+            up = cloudinary.uploader.upload(media_file, resource_type="auto")
+            media_url = up.get("secure_url")
+            media_type = up.get("resource_type")  # 'image' | 'video'
+
+        text_present = bool(text_content)
+
         post_data = {
-            "user_id": data.get("user_id"),
-            "text": data.get("text"),
-            "media":media_url,
+            "user_id": user_id,
+            "text": text_content if text_present else None,
+            "media": media_url,
+            "is_video": bool(media_type == "video"),
             "flag": False,
             "status": "uncensored",
             "total_love": 0,
@@ -56,109 +80,101 @@ class CensorshipService(collection):
         }
 
         try:
-            user_data = self.user_collection.find_one({"_id": ObjectId(data.get("user_id"))})
-            if not user_data:
+            user = self.user_collection.find_one({"_id": ObjectId(user_id)})
+            if not user:
                 return {"success": False, "error": "User not found."}
+
             post_info = self.post_collection.insert_one(post_data)
             postid = str(post_info.inserted_id)
-            if not postid:
-                return {"success": False, "error": "Failed to create post."}
-            result = self.image_censorship(media_url, postid)
-            data_Isvalid = ["NonViolence"]
-            data = result['data']
-            censoreds = []
-            valids = []
-            awaiting_censorship = []
-            for item in data['result']:
-                if item['result'] == None or item['result']['label'] in data_Isvalid:
-                    continue
-                if item['result']['conf'] >= 0.8:
-                    self.censorship_collection.insert_one({
-                        "post_id": postid,
-                        "label": item['result']['label'],
-                        "confidence": item['result']['conf'],
-                        "image_url": item['cloud_url'],
-                        "status": "censored",
-                        "created_at": datetime.now()
-                    })
-                    data = {
-                        "post_id": postid,
-                        "label": item['result']['label'],
-                        "confidence": item['result']['conf'],
-                        "image_url": item['cloud_url'],
-                        "status": "censored",
-                        "created_at": datetime.now()
-                    }
-                    censoreds.append(data)
-                    
-                elif item['result']['conf'] < 0.8 and item['result']['conf'] >0.65:
-                    self.censorship_collection.insert_one({
-                        "post_id": postid,
-                        "label": item['result']['label'],
-                        "confidence": item['result']['conf'],
-                        "image_url": item['cloud_url'],
-                        "status": "awaiting censorship",
-                        "created_at": datetime.now()
-                    })
-                    data = {
-                        "post_id": postid,
-                        "label": item['result']['label'],
-                        "confidence": item['result']['conf'],
-                        "image_url": item['cloud_url'],
-                        "status": "awaiting censorship",
-                        "created_at": datetime.now()
-                    }
-                    awaiting_censorship.append(data)
-                else:
-                    self.censorship_collection.insert_one({
-                        "post_id": postid,
-                        "label": item['result']['label'],
-                        "confidence": item['result']['conf'],
-                        "image_url": item['cloud_url'],
-                        "status": "valid",
-                        "created_at": datetime.now()
-                    })
-                    data = {
-                        "post_id": postid,
-                        "label": item['result']['label'],
-                        "confidence": item['result']['conf'],
-                        "image_url": item['cloud_url'],
-                        "status": "valid",
-                        "created_at": datetime.now()
-                    }
-                    valids.append(data)
-            if censoreds:
-                self.post_collection.update_one(
-                    {"_id": ObjectId(postid)},
-                    {"$set": {"status": "not vaid"}}
-                )
-                return {
-                    "success": True,
-                    "message": "Your post has been violated",
-                    "status": "not vaid",
-                    "post_id": postid,
 
-                }
-            elif awaiting_censorship and not censoreds:
-                self.post_collection.update_one(
-                    {"_id": ObjectId(postid)},
-                    {"$set": {"status": "awaiting","flag": True}}
-                )
+            def run_media():
+                if not media_url or not media_type:
+                    return None
+                return self.image_censorship(media_url, postid)
+
+            def run_text():
+                if not text_present:
+                    return None
+                return self.text_censorship(text_content, postid)  
+
+            media_result = None
+            text_result = None
+
+            if media_url and text_present:
+                with ThreadPoolExecutor(max_workers=2) as ex:
+                    f_media = ex.submit(run_media)
+                    f_text  = ex.submit(run_text)
+                    media_result = f_media.result()
+                    text_result  = f_text.result()
+                    print("media_result",media_result)
+                    print("text_result",text_result)
+            elif media_url:
+                media_result = run_media()
+            elif text_present:
+                text_result = run_text()
+            else:
+                return {"success": False, "error": "No content provided."}
+
+            data_Isvalid = ["NonViolence"]
+            censoreds, awaiting, valids = [], [], []
+
+            if media_result and "data" in media_result:
+                img_payload = media_result["data"]
+                for item in img_payload.get("result", []):
+                    r = item.get("result")
+                    if (r is None) or (r.get("label") in data_Isvalid):
+                        continue
+                    conf = float(r.get("conf", 0.0))
+                    label = r.get("label")
+                    cloud_url = item.get("cloud_url")
+
+                    if conf >= 0.80:
+                        status = "not valid"; censoreds.append(item)
+                    elif 0.65 < conf < 0.80:
+                        status = "awaiting censorship"; awaiting.append(item)
+                    else:
+                        status = "valid"; valids.append(item)
+
+                    self.censorship_collection.insert_one({
+                        "post_id": postid,
+                        "label": label,
+                        "confidence": conf,
+                        "image_url": cloud_url,
+                        "status": status,
+                        "created_at": datetime.now()
+                    })
+            if censoreds:
+                self.post_collection.update_one({"_id": ObjectId(postid)},
+                                                {"$set": {"status": "not valid", "flag": True}})
                 return {
                     "success": True,
-                    "message": "Your post is potentially infringing. Please wait for moderation",
-                    "status": "awaiting",
                     "post_id": postid,
+                    "media":{"message": " bài viết của bạn qua kiểm duyệt tự động thấy có vi phạm",
+                    "status": "not valid",
+                    },
+                    "text_analysis": (text_result.get("data") if text_result else None)  # passthrough
                 }
-            elif valids and not censoreds and not awaiting_censorship:
-                self.post_collection.update_one(
-                    {"_id": ObjectId(postid)},
-                    {"$set": {"status": "valid"}} 
-                )
-            return {"success": True, "message": "Post created successfully", "status": "valid", "post_id": postid}
+            elif awaiting and not censoreds:
+                self.post_collection.update_one({"_id": ObjectId(postid)},
+                                                {"$set": {"status": "awaiting", "flag": True}})
+                return {
+                    "success": True,
+                    "post_id": postid,
+                    "media":{"message": "bài viết của bạn qua kiểm duyệt tự động phát hiện có khả năng vi phạm. chúng tôi sẽ thông báo kết quả sớm nhất có thể",
+                    "status": "awaiting",
+                    },
+                    "text_analysis": (text_result.get("data") if text_result else None)
+                }
+            else:
+                self.post_collection.update_one({"_id": ObjectId(postid)},
+                                                {"$set": {"status": "valid", "flag": False}})
+                return {
+                    "success": True,
+                    "media":{
+                        "mesage":"bài viết của bạn không phát hiện vi phạm"
+                    },
+                    "text_analysis": (text_result.get("data") if text_result else None)
+                }
+
         except Exception as e:
-            return {
-                "message": "Error in image censorship",
-                "postid": postid,
-                "error": str(e)
-            }
+            return {"success": False, "message": "Error in censorship", "error": str(e)}
