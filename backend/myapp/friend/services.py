@@ -4,17 +4,17 @@ from datetime import datetime
 
 class collection:
     def __init__(self):
-        self.friend_colleciton = mongo.get_collection('friend')
+        self.friend_collectiton = mongo.get_collection('friend')
         self.user_collection = mongo.get_collection('users')
-    def get_friend_colleciton(self):
-        return self.friend_colleciton
+    def get_friend_collection(self):
+        return self.friend_collectiton
     def get_user_collection(self): 
         return self.user_collection
 
 class FriendService(collection):
     def __init__(self):
         super().__init__()
-        self.friend_collection=self.get_friend_colleciton()
+        self.friend_collection=self.get_friend_collection()
         self.user_collection = self.get_user_collection()
     
     def create_friend(self,follower_id,followee_id):
@@ -87,3 +87,50 @@ class FriendService(collection):
             return {"success":True,"flowers":flowers_data}
         except Exception as e:
             return{"success":False,"message":str(e)}
+    
+    def getlistfriend(self, user_id: str):
+        """
+        Danh sách bạn bè (mutual follow):
+        - followees: những người user_id đang follow
+        - followers: những người đang follow user_id
+        - friends = giao (mutual) followees ∩ followers
+        """
+        try:
+            # 1) Lấy những người mình đang follow
+            followees_cursor = self.friend_collection.find(
+                {'follower_id': user_id},
+                {'_id': 0, 'followee_id': 1}
+            )
+            followees = {doc['followee_id'] for doc in followees_cursor}
+
+            # 2) Lấy những người đang follow mình
+            followers_cursor = self.friend_collection.find(
+                {'followee_id': user_id},
+                {'_id': 0, 'follower_id': 1}
+            )
+            followers = {doc['follower_id'] for doc in followers_cursor}
+
+          
+            mutual_ids = list(followees & followers)
+
+            if not mutual_ids:
+                return {"success": True, "data": "bạn chưa có bạn bè"}
+
+          
+            users_cursor = self.user_collection.find(
+                {"_id": {"$in": [ObjectId(uid) for uid in mutual_ids]}},
+                {"first_name": 1, "last_name": 1, "avatar": 1}
+            )
+            friends = [
+                {
+                    "id": str(u["_id"]),
+                    "first_name": u.get("first_name"),
+                    "last_name": u.get("last_name"),
+                    "avatar": u.get("avatar")
+                }
+                for u in users_cursor
+            ]
+
+            return {"success": True, "data": friends}
+        except Exception as e:
+            return {"success": False, "message": str(e)}

@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import Login from './pages/login'
+import Login from './auth/login'
 import Home from './pages/home'
 import Profile from './pages/profileUser'
 import DefaultLayout from '../src/pages/layout'

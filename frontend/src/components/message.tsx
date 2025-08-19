@@ -1,22 +1,26 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
-import { connectChatWS } from "../lib/sw"; // ✅ đúng: ws
+// src/components/MessageWidget.tsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { connectChatWS } from "../lib/sw"; // 👉 dùng ws, KHÔNG phải sw
 import { AiOutlineMessage } from "react-icons/ai";
 import { MdOutlineArrowBack } from "react-icons/md";
 import { LuSendHorizontal, LuX } from "react-icons/lu";
 import { FaPaperclip, FaRegSmile } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
+import { getlistFriend } from "../redux/api/apiRequestFriend";
+
 
 type ObjectId = string;
 
 export type MessageDoc = {
   id: ObjectId;
-  user_id: ObjectId;
+  user_id: ObjectId; // tenant/owner nếu có
   send_user_id: ObjectId;
   receive_user_id: ObjectId;
   text?: string;
   image?: string;
   video?: string;
-  created_at: string;
+  created_at: string; // ISO string
 };
 
 type UserLite = {
@@ -24,22 +28,65 @@ type UserLite = {
   name: string;
   avatar?: string;
 };
+// ====== Lấy friend list từ API ======
+const useFriends = (user_id?: ObjectId) => {
+  const dispatch = useDispatch()
+  const [friends, setFriends] = useState<UserLite[]>([]);
+  const [loading, setLoading] = useState(false);
+  const data = useSelector((state: any) => state.friend.getlistFriend.data)
+  const dataReal = data.data
+  console.log(dataReal)
+  useEffect(()=>{
+    if (!user_id) return;
+    
+    getlistFriend(user_id,dispatch);
+    
+  },[])
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    
+    
+    try {
+      console.log('112')
+      if (dataReal.length !== 0) console.log('dell cos')
+        
+        const items = (dataReal).map((f: any) => ({
+          
+          _id: f.id,
+          name: [f.first_name, f.last_name].filter(Boolean).join(" ").trim(),
+          avatar: f.avatar ,
+        }));
+        console.log('item',items)
+      if (mounted) setFriends(items);
+    } catch (e) {
+      console.error("getlistFriend error:", e);
+      if (mounted) setFriends([]);
+    } finally {
+      if (mounted) setLoading(false);
+    }
+    
+    return () => {
+      mounted = false;
+    };
+  }, [dataReal]);
 
-// ==== TEST CỨNG THEO YÊU CẦU ====
-const ROOM_ID: ObjectId = "6899aa39d2a417b8d15ac3ad";
-const USER1: ObjectId = "6891f46fc8037f0507a22f1f";
-const USER2: ObjectId = "6896f2040d8ae3b3c114a531";
-
-// 👉 ĐỔI GIỮA USER1 / USER2 ĐỂ TEST 2 TAB
-const currentUserId: ObjectId = USER1;
-
-const users: Record<string, UserLite> = {
-  [USER1]: { _id: USER1, name: "User1", avatar: "https://i.pravatar.cc/150?img=2" },
-  [USER2]: { _id: USER2, name: "User2", avatar: "https://i.pravatar.cc/150?img=11" },
+  return { friends, loading };
+};
+// ====== Lấy dữ liệu từ Redux ======
+const useAuth = () => {
+  const user = useSelector((s: any) => s.auth.login.currentUser.user_id);
+  console.log("user",user)
+  return { user };
 };
 
-const seedMessages: MessageDoc[] = [];
 
+const useContacts = (): UserLite[] => {
+  const contacts = useSelector((s: any) => s.chat?.contacts) as UserLite[] | undefined;
+  return contacts ?? [];
+};
+
+// ====== Helpers ======
 function timeAgo(iso: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
   if (diff < 60) return `${Math.floor(diff)}s`;
@@ -47,11 +94,9 @@ function timeAgo(iso: string) {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
   return `${Math.floor(diff / 86400)}d`;
 }
-
 function getOtherUserId(m: MessageDoc, me: ObjectId) {
   return m.send_user_id === me ? m.receive_user_id : m.send_user_id;
 }
-
 function lastMessagePreview(m: MessageDoc) {
   if (m.text && m.text.trim()) return m.text;
   if (m.image) return "📷 Image";
@@ -59,70 +104,76 @@ function lastMessagePreview(m: MessageDoc) {
   return "(empty)";
 }
 
-// ==== List cuộc hội thoại (2 người nên chỉ 1 dòng) ====
+// ====== Conversation List ======
 function ConversationList({
   me,
   messages,
+  friends,
   onSelect,
   selectedId,
 }: {
   me: ObjectId;
   messages: MessageDoc[];
+  friends: UserLite[];
   onSelect: (otherId: ObjectId) => void;
   selectedId?: ObjectId | null;
 }) {
-  const convs = useMemo(() => {
-    const map = new Map<ObjectId, MessageDoc[]>();
-    messages.forEach((m) => {
-      const other = getOtherUserId(m, me);
-      if (!map.has(other)) map.set(other, []);
-      map.get(other)!.push(m);
-    });
-    const rows = Array.from(map.entries()).map(([otherId, arr]) => {
-      const last = arr.slice().sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-      return { otherId, last };
-    });
-    rows.sort((a, b) => b.last.created_at.localeCompare(a.last.created_at));
-    // Nếu chưa có message nào, vẫn show đối phương để click
-    if (rows.length === 0) {
-      const otherId = me === USER1 ? USER2 : USER1;
-      rows.push({
-        otherId,
-        last: {
-          id: "seed",
+  // Tạo các row từ friend list + last message (nếu có)
+  const rows = useMemo(() => {
+    const getLast = (otherId: ObjectId) =>
+      messages
+        .filter(
+          (m) =>
+            (m.send_user_id === me && m.receive_user_id === otherId) ||
+            (m.send_user_id === otherId && m.receive_user_id === me)
+        )
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+
+    const r = friends.map((f) => {
+      const last = getLast(f._id);
+      const lastOrSeed: MessageDoc =
+        last ||
+        ({
+          id: `seed-${f._id}`,
           user_id: me,
-          send_user_id: otherId,
+          send_user_id: f._id,
           receive_user_id: me,
           text: "Bắt đầu chat…",
-          created_at: new Date().toISOString(),
-        } as MessageDoc,
-      });
-    }
-    return rows;
-  }, [me, messages]);
+          created_at: new Date(0).toISOString(), // để sort xuống dưới nếu chưa chat
+        } as MessageDoc);
+
+      return { other: f, last: lastOrSeed };
+    });
+
+    r.sort((a, b) => b.last.created_at.localeCompare(a.last.created_at));
+    return r;
+  }, [friends, me, messages]);
 
   return (
     <div className="border-b border-gray-200 dark:border-[#2c2c2c]">
-      {convs.map(({ otherId, last }) => {
-        const u = users[otherId];
-        const active = selectedId === otherId;
+      {rows.map(({ other, last }) => {
+        const active = selectedId === other._id;
         return (
           <div
-            key={otherId}
-            onClick={() => onSelect(otherId)}
+            key={other._id}
+            onClick={() => onSelect(other._id)}
             className={`flex gap-3 p-3 cursor-pointer transition-colors ${
-              active ? "bg-gray-100 dark:bg-[#2b2b2b]" : "hover:bg-gray-100 dark:hover:bg-[#2b2b2b]"
+              active
+                ? "bg-gray-100 dark:bg-[#2b2b2b]"
+                : "hover:bg-gray-100 dark:hover:bg-[#2b2b2b]"
             }`}
           >
             <img
-              src={u?.avatar || "https://i.pravatar.cc/150?img=1"}
+              src={other?.avatar || "https://i.pravatar.cc/150?img=1"}
               alt="avatar"
               className="object-cover rounded-full w-10 h-10"
             />
             <div className="flex-1 min-w-0">
               <div className="flex justify-between">
-                <span className="text-sm font-medium">{u?.name || otherId}</span>
-                <span className="text-[11px] text-gray-500">{timeAgo(last.created_at)}</span>
+                <span className="text-sm font-medium">{other?.name || other._id}</span>
+                <span className="text-[11px] text-gray-500">
+                  {timeAgo(last.created_at)}
+                </span>
               </div>
               <span className="block text-[12px] text-gray-500 truncate">
                 {lastMessagePreview(last)}
@@ -131,20 +182,25 @@ function ConversationList({
           </div>
         );
       })}
+      {rows.length === 0 && (
+        <div className="p-4 text-sm text-gray-500">
+          Chưa có bạn bè. Hãy kết bạn để bắt đầu chat.
+        </div>
+      )}
     </div>
   );
 }
 
-// ==== Cửa sổ chat (giữ nguyên từ code của bạn, rút gọn imports) ====
+// ====== Chat Window ======
 function ChatWindow({
   me,
-  otherId,
+  other,
   allMessages,
   onSend,
   onBack,
 }: {
   me: ObjectId;
-  otherId: ObjectId;
+  other: UserLite;
   allMessages: MessageDoc[];
   onSend: (payload: { text?: string; image?: string; video?: string }) => void;
   onBack: () => void;
@@ -153,33 +209,26 @@ function ChatWindow({
   const [mediaFile, setMediaFile] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const thread = useMemo(
     () =>
       allMessages
         .filter(
           (m) =>
-            (m.send_user_id === me && m.receive_user_id === otherId) ||
-            (m.send_user_id === otherId && m.receive_user_id === me)
+            (m.send_user_id === me && m.receive_user_id === other._id) ||
+            (m.send_user_id === other._id && m.receive_user_id === me)
         )
         .sort((a, b) => a.created_at.localeCompare(b.created_at)),
-    [allMessages, me, otherId]
+    [allMessages, me, other._id]
   );
-
-  const other = users[otherId];
-
-  const handlePickFile = () => fileInputRef.current?.click();
 
   const onFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
     const url = URL.createObjectURL(f);
-
     if (f.type.startsWith("image/")) setMediaType("image");
     else if (f.type.startsWith("video/")) setMediaType("video");
     else setMediaType(null);
-
     setMediaFile(url);
   };
 
@@ -199,14 +248,16 @@ function ChatWindow({
 
   return (
     <div className="flex flex-col justify-center h-full">
+      {/* Header */}
       <div className="flex items-center gap-2 p-3 border-b border-gray-200 dark:border-[#2c2c2c]">
-        <button title="back" onClick={onBack} className="cursor-pointer">
+        <button title="Quay lại" onClick={onBack} className="cursor-pointer">
           <MdOutlineArrowBack size={20} />
         </button>
-        <img src={other?.avatar} className="w-8 h-8 rounded-full" alt="avatar" />
-        <div className="font-medium text-sm">{other?.name || otherId}</div>
+        <img src={other?.avatar || "https://i.pravatar.cc/150?img=1"} className="w-8 h-8 rounded-full" alt="avatar" />
+        <div className="font-medium text-sm">{other?.name || other._id}</div>
       </div>
 
+      {/* Messages */}
       <div className="flex-1 p-3 overflow-y-auto space-y-2">
         {thread.map((m) => {
           const mine = m.send_user_id === me;
@@ -235,6 +286,7 @@ function ChatWindow({
         })}
       </div>
 
+      {/* Composer */}
       <div className="p-3 border-t border-gray-200 dark:border-[#2c2c2c]">
         {mediaFile && (
           <div className="mb-2 relative inline-block">
@@ -313,23 +365,36 @@ function ChatWindow({
   );
 }
 
+// ====== Widget chính ======
 export default function MessageWidget() {
-  const [isOpen, setIsOpen] = useState(true); // mở sẵn cho test
-  const [messages, setMessages] = useState<MessageDoc[]>(seedMessages);
-  const [activeOther, setActiveOther] = useState<ObjectId | null>(USER2); // mặc định chat với USER2
+  const { user } = useAuth();
+  const currentUserId = user as ObjectId | undefined;
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<MessageDoc[]>([]);
+  const [activeOther, setActiveOther] = useState<ObjectId | null>(null);
+
+  const { friends } = useFriends(currentUserId);  // ✅ lấy friend list
   const wsRef = useRef<ReturnType<typeof connectChatWS> | null>(null);
 
+  // Nếu chưa đăng nhập -> không render chat
+  if (!currentUserId) {
+    return null; // ✅ đừng `return` trống
+  }
+
+  const roomId = activeOther
+    ? [currentUserId, activeOther].sort().join("_")
+    : undefined;
+
   useEffect(() => {
-    if (!activeOther) return;
+    if (!activeOther || !currentUserId || !roomId) return;
 
     wsRef.current = connectChatWS({
-      roomId: ROOM_ID,
+      roomId,
       userId: currentUserId,
-      onOpen: () => console.log("WS open", ROOM_ID),
+      onOpen: () => console.log("WS open", roomId),
       onMessage: (data: any) => {
-        // Nếu BE broadcast lại cho cả phòng → bỏ echo của chính mình
-        if (data.send_id === currentUserId) return;
+        if (data.send_id === currentUserId) return; // bỏ echo
 
         const newMsg: MessageDoc = {
           id: crypto.randomUUID(),
@@ -353,12 +418,12 @@ export default function MessageWidget() {
     });
 
     return () => wsRef.current?.close();
-  }, [activeOther]);
+  }, [activeOther, currentUserId, roomId]);
 
   const handleSend = (payload: { text?: string; image?: string; video?: string }) => {
-    if (!activeOther || !wsRef.current) return;
+    if (!activeOther || !wsRef.current || !currentUserId) return;
 
-    // Optimistic UI
+    // optimistic UI
     const newMsg: MessageDoc = {
       id: crypto.randomUUID(),
       user_id: currentUserId,
@@ -369,7 +434,6 @@ export default function MessageWidget() {
     };
     setMessages((prev) => [...prev, newMsg]);
 
-    // Gửi WS thật
     wsRef.current.send({
       send_id: currentUserId,
       receiver_id: activeOther,
@@ -378,8 +442,13 @@ export default function MessageWidget() {
     });
   };
 
+  const otherUser = activeOther
+    ? friends.find((c) => c._id === activeOther) || { _id: activeOther, name: activeOther }
+    : undefined;
+
   return (
     <div className="relative">
+      {/* FAB */}
       <div
         onClick={() => setIsOpen((s) => !s)}
         className="fixed cursor-pointer flex justify-center items-center bottom-5 right-5 w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1d1d1d] shadow-lg"
@@ -389,12 +458,14 @@ export default function MessageWidget() {
 
       {isOpen && (
         <div className="fixed bottom-20 right-5 w-[320px] h-[480px] bg-white dark:bg-[#181818] shadow-2xl rounded-xl overflow-hidden border border-gray-200 dark:border-[#2c2c2c]">
-          <div className="p-3 font-semibold text-sm border-b border-gray-200 dark:border-[#2c2c2c]">Messages</div>
+          <div className="p-3 font-semibold text-sm border-b border-gray-200 dark:border-[#2c2c2c]">
+            Messages
+          </div>
 
-          {activeOther ? (
+          {activeOther && otherUser ? (
             <ChatWindow
               me={currentUserId}
-              otherId={activeOther}
+              other={otherUser}
               allMessages={messages}
               onSend={handleSend}
               onBack={() => setActiveOther(null)}
@@ -404,6 +475,7 @@ export default function MessageWidget() {
               <ConversationList
                 me={currentUserId}
                 messages={messages}
+                friends={friends}        
                 selectedId={activeOther}
                 onSelect={setActiveOther}
               />

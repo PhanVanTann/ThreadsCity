@@ -1,28 +1,32 @@
 
 import { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
+import { useDispatch } from "react-redux";
 import { NavLink } from "react-router";
 import { useNavigate } from "react-router";
+import { loginUser } from "../redux/api/apiRequestAuth";
 
 // import { useAuth } from "../../context/authContext";
-import {authService} from "../../api/auth";
 export default function Login() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
   
   // const { login } = useAuth()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res= await authService.SignIn({ email, password });
-         console.log("Login successful:", res.data);
-         localStorage.setItem("user_id", res.data.user_id? res.data.user_id : "");
-         navigate(`/`);
-    } catch (err) {
-      alert("Login failed");
-    } 
+    if (!email || !password) {
+      alert("Vui lòng nhập đầy đủ thông tin");
+      return;
+    } else  {
+      const user = {
+        email,
+        password,
+      }
+      loginUser(user, dispatch, navigate)
+    }
   };
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-[#000] gap-5">

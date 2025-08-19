@@ -42,13 +42,8 @@ export default function Register() {
     const v = validate();
     setErrors(v);
     if (Object.keys(v).length > 0) return;
-    const newUser = {
-      email: form.email,
-      password: form.password,
-      first_name: form.first_name,
-      last_name: form.last_name
-    }
-    registerUser(newUser,distpach,navigate)
+
+   
   }
 
 
