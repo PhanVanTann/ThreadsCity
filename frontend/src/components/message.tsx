@@ -1,20 +1,22 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { connectChatWS } from "../lib/sw"; // ✅ đúng: ws
 import { AiOutlineMessage } from "react-icons/ai";
-import { MdOutlineArrowBack } from 'react-icons/md';
-import { LuSendHorizontal, LuX } from 'react-icons/lu';
-import { FaImages, FaPaperclip, FaRegSmile, FaVideo } from "react-icons/fa";
+import { MdOutlineArrowBack } from "react-icons/md";
+import { LuSendHorizontal, LuX } from "react-icons/lu";
+import { FaPaperclip, FaRegSmile } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
+
 type ObjectId = string;
 
 export type MessageDoc = {
   id: ObjectId;
-  user_id: ObjectId;            // owner/tenant (tuỳ bạn có dùng hay không)
+  user_id: ObjectId;
   send_user_id: ObjectId;
   receive_user_id: ObjectId;
   text?: string;
   image?: string;
   video?: string;
-  created_at: string;           // ISO string
+  created_at: string;
 };
 
 type UserLite = {
@@ -23,40 +25,20 @@ type UserLite = {
   avatar?: string;
 };
 
-// ==== mock (thay bằng API thật) ====
-const currentUserId: ObjectId = "u1";
+// ==== TEST CỨNG THEO YÊU CẦU ====
+const ROOM_ID: ObjectId = "6899aa39d2a417b8d15ac3ad";
+const USER1: ObjectId = "6891f46fc8037f0507a22f1f";
+const USER2: ObjectId = "6896f2040d8ae3b3c114a531";
+
+// 👉 ĐỔI GIỮA USER1 / USER2 ĐỂ TEST 2 TAB
+const currentUserId: ObjectId = USER1;
+
 const users: Record<string, UserLite> = {
-  u1: { _id: "u1", name: "Bạn", avatar: "https://i.pravatar.cc/150?img=2" },
-  u2: { _id: "u2", name: "Minh", avatar: "https://i.pravatar.cc/150?img=11" },
-  u3: { _id: "u3", name: "Lan", avatar: "https://i.pravatar.cc/150?img=14" },
+  [USER1]: { _id: USER1, name: "User1", avatar: "https://i.pravatar.cc/150?img=2" },
+  [USER2]: { _id: USER2, name: "User2", avatar: "https://i.pravatar.cc/150?img=11" },
 };
 
-const seedMessages: MessageDoc[] = [
-  {
-    id: "m1",
-    user_id: "u1",
-    send_user_id: "u2",
-    receive_user_id: "u1",
-    text: "Chiều nay đi cf?",
-    created_at: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
-  },
-  {
-    id: "m2",
-    user_id: "u1",
-    send_user_id: "u1",
-    receive_user_id: "u2",
-    text: "Ok 3h nhé",
-    created_at: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
-  },
-  {
-    id: "m3",
-    user_id: "u1",
-    send_user_id: "u3",
-    receive_user_id: "u1",
-    text: "Gửi mình file thiết kế với!",
-    created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-  },
-];
+const seedMessages: MessageDoc[] = [];
 
 function timeAgo(iso: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -66,7 +48,6 @@ function timeAgo(iso: string) {
   return `${Math.floor(diff / 86400)}d`;
 }
 
-// ==== helpers ====
 function getOtherUserId(m: MessageDoc, me: ObjectId) {
   return m.send_user_id === me ? m.receive_user_id : m.send_user_id;
 }
@@ -78,7 +59,7 @@ function lastMessagePreview(m: MessageDoc) {
   return "(empty)";
 }
 
-// ==== UI components ====
+// ==== List cuộc hội thoại (2 người nên chỉ 1 dòng) ====
 function ConversationList({
   me,
   messages,
@@ -90,7 +71,6 @@ function ConversationList({
   onSelect: (otherId: ObjectId) => void;
   selectedId?: ObjectId | null;
 }) {
-  // group by otherUserId
   const convs = useMemo(() => {
     const map = new Map<ObjectId, MessageDoc[]>();
     messages.forEach((m) => {
@@ -98,15 +78,26 @@ function ConversationList({
       if (!map.has(other)) map.set(other, []);
       map.get(other)!.push(m);
     });
-
-    // reduce to last message
     const rows = Array.from(map.entries()).map(([otherId, arr]) => {
       const last = arr.slice().sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
       return { otherId, last };
     });
-
-    // sort by last desc
     rows.sort((a, b) => b.last.created_at.localeCompare(a.last.created_at));
+    // Nếu chưa có message nào, vẫn show đối phương để click
+    if (rows.length === 0) {
+      const otherId = me === USER1 ? USER2 : USER1;
+      rows.push({
+        otherId,
+        last: {
+          id: "seed",
+          user_id: me,
+          send_user_id: otherId,
+          receive_user_id: me,
+          text: "Bắt đầu chat…",
+          created_at: new Date().toISOString(),
+        } as MessageDoc,
+      });
+    }
     return rows;
   }, [me, messages]);
 
@@ -140,15 +131,11 @@ function ConversationList({
           </div>
         );
       })}
-      {convs.length === 0 && (
-        <div className="p-4 text-sm text-gray-500">Chưa có tin nhắn</div>
-      )}
     </div>
   );
 }
 
-
-
+// ==== Cửa sổ chat (giữ nguyên từ code của bạn, rút gọn imports) ====
 function ChatWindow({
   me,
   otherId,
@@ -182,7 +169,6 @@ function ChatWindow({
 
   const other = users[otherId];
 
-  // Chọn file ảnh hoặc video
   const handlePickFile = () => fileInputRef.current?.click();
 
   const onFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -190,17 +176,13 @@ function ChatWindow({
     if (!f) return;
     const url = URL.createObjectURL(f);
 
-    if (f.type.startsWith("image/")) {
-      setMediaType("image");
-    } else if (f.type.startsWith("video/")) {
-      setMediaType("video");
-    } else {
-      setMediaType(null);
-    }
+    if (f.type.startsWith("image/")) setMediaType("image");
+    else if (f.type.startsWith("video/")) setMediaType("video");
+    else setMediaType(null);
+
     setMediaFile(url);
   };
 
-  // Gửi tin nhắn
   const handleSend = () => {
     const t = text.trim();
     if (!t && !mediaFile) return;
@@ -217,20 +199,14 @@ function ChatWindow({
 
   return (
     <div className="flex flex-col justify-center h-full">
-      {/* Header */}
       <div className="flex items-center gap-2 p-3 border-b border-gray-200 dark:border-[#2c2c2c]">
-        <button title="a" onClick={onBack} className="cursor-pointer">
+        <button title="back" onClick={onBack} className="cursor-pointer">
           <MdOutlineArrowBack size={20} />
         </button>
-        <img
-          src={other?.avatar || "https://i.pravatar.cc/150?img=1"}
-          className="w-8 h-8 rounded-full"
-          alt="avatar"
-        />
+        <img src={other?.avatar} className="w-8 h-8 rounded-full" alt="avatar" />
         <div className="font-medium text-sm">{other?.name || otherId}</div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 p-3 overflow-y-auto space-y-2">
         {thread.map((m) => {
           const mine = m.send_user_id === me;
@@ -243,8 +219,7 @@ function ChatWindow({
                     : "bg-gray-100 dark:bg-[#2b2b2b] text-gray-900 dark:text-gray-100 rounded-bl-sm"
                 }`}
               >
-                
-                {m.image && <img src={m.image} className="rounded-md mt-1 max-h-52 object-cover"  alt="a"/>}
+                {m.image && <img src={m.image} className="rounded-md mt-1 max-h-52 object-cover" alt="img" />}
                 {m.video && (
                   <video controls className="rounded-md mt-1 max-h-52">
                     <source src={m.video} />
@@ -252,10 +227,7 @@ function ChatWindow({
                 )}
                 {m.text && <div className="whitespace-pre-wrap">{m.text}</div>}
                 <div className="text-[10px] opacity-70 mt-1 text-right">
-                  {new Date(m.created_at).toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {new Date(m.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
             </div>
@@ -263,9 +235,7 @@ function ChatWindow({
         })}
       </div>
 
-      {/* Composer */}
       <div className="p-3 border-t border-gray-200 dark:border-[#2c2c2c]">
-        {/* Preview media */}
         {mediaFile && (
           <div className="mb-2 relative inline-block">
             <button
@@ -278,9 +248,7 @@ function ChatWindow({
             >
               <LuX size={14} />
             </button>
-            {mediaType === "image" && (
-              <img src={mediaFile} className="max-h-40 rounded-lg border" alt="a"/>
-            )}
+            {mediaType === "image" && <img src={mediaFile} className="max-h-40 rounded-lg border" alt="preview" />}
             {mediaType === "video" && (
               <video controls className="max-h-40 rounded-lg border">
                 <source src={mediaFile} />
@@ -296,7 +264,6 @@ function ChatWindow({
           }}
           className="flex items-end gap-1"
         >
-          {/* Emoji */}
           <div className="relative">
             <button
               type="button"
@@ -308,52 +275,36 @@ function ChatWindow({
             </button>
             {showEmoji && (
               <div className="absolute bottom-10 left-0 z-10">
-                <EmojiPicker
-                  onEmojiClick={(emojiData) => setText((prev) => prev + emojiData.emoji)}
-                  theme="dark"
-                />
+                <EmojiPicker onEmojiClick={(emojiData) => setText((prev) => prev + emojiData.emoji)} theme="dark" />
               </div>
             )}
           </div>
 
-          {/* Nút chung cho ảnh + video */}
           <button
             type="button"
-            onClick={handlePickFile}
+            onClick={() => (document.querySelector<HTMLInputElement>("#filePicker")?.click())}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2b2b2b]"
             title="Đính kèm ảnh/video"
           >
             <FaPaperclip />
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/*"
-            hidden
-            onChange={onFileChange}
+          <input id="filePicker" type="file" accept="image/*,video/*" hidden onChange={onFileChange} />
+
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Nhập tin nhắn…"
+            className="flex-1 rounded-lg px-3 py-2 bg-gray-100 dark:bg-[#2b2b2b] outline-none resize-none"
+            rows={1}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
           />
 
-          {/* Ô nhập */}
-          <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Nhập tin nhắn…"
-                className="flex-1 rounded-lg px-3 py-2 bg-gray-100 dark:bg-[#2b2b2b] outline-none resize-none"
-                rows={1}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault(); // tránh xuống dòng
-                    handleSend();
-                    }
-                }}
-                />
-
-          {/* Gửi */}
-          <button
-            type="submit"
-            className="px-3 py-2 cursor-pointer text-white rounded-lg "
-            title="Gửi"
-          >
+          <button type="submit" className="px-3 py-2 cursor-pointer text-white rounded-lg" title="Gửi">
             <LuSendHorizontal size={20} />
           </button>
         </form>
@@ -362,16 +313,52 @@ function ChatWindow({
   );
 }
 
-
-
-
 export default function MessageWidget() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // mở sẵn cho test
   const [messages, setMessages] = useState<MessageDoc[]>(seedMessages);
-  const [activeOther, setActiveOther] = useState<ObjectId | null>(null);
+  const [activeOther, setActiveOther] = useState<ObjectId | null>(USER2); // mặc định chat với USER2
+
+  const wsRef = useRef<ReturnType<typeof connectChatWS> | null>(null);
+
+  useEffect(() => {
+    if (!activeOther) return;
+
+    wsRef.current = connectChatWS({
+      roomId: ROOM_ID,
+      userId: currentUserId,
+      onOpen: () => console.log("WS open", ROOM_ID),
+      onMessage: (data: any) => {
+        // Nếu BE broadcast lại cho cả phòng → bỏ echo của chính mình
+        if (data.send_id === currentUserId) return;
+
+        const newMsg: MessageDoc = {
+          id: crypto.randomUUID(),
+          user_id: currentUserId,
+          send_user_id: data.send_id,
+          receive_user_id: data.receiver_id,
+          text: data.text,
+          image: data.media?.image,
+          video: data.media?.video,
+          created_at: new Date().toISOString(),
+        };
+
+        const inThread =
+          (newMsg.send_user_id === currentUserId && newMsg.receive_user_id === activeOther) ||
+          (newMsg.send_user_id === activeOther && newMsg.receive_user_id === currentUserId);
+
+        if (inThread) setMessages((prev) => [...prev, newMsg]);
+      },
+      onClose: () => console.log("WS closed"),
+      onError: (e) => console.warn("WS error", e),
+    });
+
+    return () => wsRef.current?.close();
+  }, [activeOther]);
 
   const handleSend = (payload: { text?: string; image?: string; video?: string }) => {
-    if (!activeOther) return;
+    if (!activeOther || !wsRef.current) return;
+
+    // Optimistic UI
     const newMsg: MessageDoc = {
       id: crypto.randomUUID(),
       user_id: currentUserId,
@@ -381,12 +368,18 @@ export default function MessageWidget() {
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, newMsg]);
-    // TODO: POST /messages với body newMsg
+
+    // Gửi WS thật
+    wsRef.current.send({
+      send_id: currentUserId,
+      receiver_id: activeOther,
+      text: payload.text,
+      media: { image: payload.image, video: payload.video },
+    });
   };
 
   return (
     <div className="relative">
-      {/* FAB */}
       <div
         onClick={() => setIsOpen((s) => !s)}
         className="fixed cursor-pointer flex justify-center items-center bottom-5 right-5 w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1d1d1d] shadow-lg"
@@ -396,33 +389,27 @@ export default function MessageWidget() {
 
       {isOpen && (
         <div className="fixed bottom-20 right-5 w-[320px] h-[480px] bg-white dark:bg-[#181818] shadow-2xl rounded-xl overflow-hidden border border-gray-200 dark:border-[#2c2c2c]">
-          {/* Header */}
+          <div className="p-3 font-semibold text-sm border-b border-gray-200 dark:border-[#2c2c2c]">Messages</div>
 
-            <div className="h-full">
-              {activeOther ? (
-                <ChatWindow
-                  me={currentUserId}
-                  otherId={activeOther}
-                  allMessages={messages}
-                  onSend={handleSend}
-                  onBack={() => setActiveOther(null)} 
-                />
-              ) : (
+          {activeOther ? (
+            <ChatWindow
+              me={currentUserId}
+              otherId={activeOther}
+              allMessages={messages}
+              onSend={handleSend}
+              onBack={() => setActiveOther(null)}
+            />
+          ) : (
             <div className="h-full overflow-y-auto">
-                  <div className="p-3 font-semibold text-sm border-b border-gray-200 dark:border-[#2c2c2c]">
-                        Messages
-                    </div>
-                    <ConversationList
-                        me={currentUserId}
-                        messages={messages}
-                        selectedId={activeOther}
-                        onSelect={setActiveOther}
-                    />
+              <ConversationList
+                me={currentUserId}
+                messages={messages}
+                selectedId={activeOther}
+                onSelect={setActiveOther}
+              />
             </div>
-              )}
-            </div>
-          </div>
-       
+          )}
+        </div>
       )}
     </div>
   );

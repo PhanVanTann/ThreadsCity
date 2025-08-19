@@ -4,6 +4,7 @@ import bcrypt
 from datetime import datetime
 import requests
 from django.http import JsonResponse
+from django.http import HttpResponseRedirect
 from utils.jwt import (
     create_access_token,
     create_refresh_token,

@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { FaGoogle } from 'react-icons/fa'
-import { NavLink } from 'react-router'
+import { useDispatch } from 'react-redux'
+import { NavLink, useNavigate } from 'react-router'
+import { registerUser } from 'src/redux/api/apiRequestAuth'
+
+
 
 export default function Register() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     name: '',
@@ -33,11 +39,18 @@ export default function Register() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const newErrors = validate()
-    setErrors(newErrors)
-    if (Object.keys(newErrors).length === 0) {
+    // const newErrors = validate()
+    // setErrors(newErrors)
+    // if (Object.keys(newErrors).length === 0) {
       // Submit form
-    }
+      const newUser = {
+        email: form.email,
+        password: form.password,
+        first_name: form.name,
+        last_name: form.lastName || 'dat',
+      }
+      registerUser(newUser,dispatch, navigate)
+    // }
   }
 
   return (

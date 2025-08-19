@@ -4,7 +4,7 @@ import { NavLink } from 'react-router'
 import Loading from '../components/loading'
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   return (
     <>
     { isLoading ? (

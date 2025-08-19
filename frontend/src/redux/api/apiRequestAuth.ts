@@ -1,3 +1,4 @@
+import { colgroup } from "framer-motion/client";
 import axiosInstance from "../../axios/axios.interceptor";
 import {
   loginFailure,
@@ -37,10 +38,13 @@ export const logoutUser = async (dispatch: any, navigate: any) => {
 };
 
 export const registerUser = async (user: any, dispatch: any, navigate: any) => {
+  console.log(user)
   dispatch(registerStart());
   try {
     const res = await axiosInstance.post("/users/", user);
     dispatch(registerSuccess(res.data));
+    navigate('/login')
+    alert(`check your email`)
   } catch (err: any) {
     console.error("Registration failed:", err);
     dispatch(registerFailure());
