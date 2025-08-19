@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PostList from '../components/postlist';
 import Postmodel from '../components/postmodel';
-import PostSkeleton from '../components/PostSkeleton';
+import PostSkeleton from '../components/postSkeleton';
 export default function Home() {
   const [openPost, setOpenPost] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

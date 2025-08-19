@@ -46,10 +46,10 @@ const users: User[] = [
                  <td className="px-3 py-2 rounded-l-[20px] transition group-hover:bg-sky-300/70">
                   {u.id}
                 </td>
-                <td className="px-3 py-2 rounded-l-[20px] transition group-hover:bg-sky-300/70">
+                <td className="px-3 py-2 transition group-hover:bg-sky-300/70">
                   {u.name}
                 </td>
-                <td className="px-3 py-2 transition group-hover:bg-sky-300/70">
+                <td className="px-3 py-2 rounded-r-[20px] transition group-hover:bg-sky-300/70">
                   {u.email}
                 </td>
               
