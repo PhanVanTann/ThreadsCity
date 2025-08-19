@@ -25,7 +25,6 @@ export default function PostSkeleton() {
       <div className="flex gap-5 mt-2">
         <div className="w-8 h-8 rounded-full bg-gray-400 dark:bg-gray-600"></div>
         <div className="w-8 h-8 rounded-full bg-gray-400 dark:bg-gray-600"></div>
-        <div className="w-8 h-8 rounded-full bg-gray-400 dark:bg-gray-600"></div>
       </div>
     </div>
   );
