@@ -1,7 +1,6 @@
 'use client';
 import { useState } from "react";
 import { FaGoogle } from "react-icons/fa";  
-import { authService } from "~/api/auth";
 import { useNavigate,NavLink } from "react-router";
 
 
@@ -40,20 +39,20 @@ export default function Register() {
     const v = validate();
     setErrors(v);
     if (Object.keys(v).length > 0) return;
-
-    try {
-     const re = await authService.SignUp({
-        email: form.email,
-        password: form.password,
-        first_name: form.first_name,
-        last_name: form.last_name,
-      });
-      console.log("Đăng ký thành công:", re);
-      navigate("/login");
-    } catch (err) {
-      alert("Đăng ký thất bại");
-      console.error(err);
-    }
+    console.log("Form data:", form);
+    // try {
+    //  const re = await authService.SignUp({
+    //     email: form.email,
+    //     password: form.password,
+    //     first_name: form.first_name,
+    //     last_name: form.last_name,
+    //   });
+    //   console.log("Đăng ký thành công:", re);
+    //   navigate("/login");
+    // } catch (err) {
+    //   alert("Đăng ký thất bại");
+    //   console.error(err);
+    // }
   }
 
 
