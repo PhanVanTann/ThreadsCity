@@ -5,6 +5,7 @@ from .services import emailService
 from utils.jwt import decode_token
 from .services import LoginService, UserLogoutService, GoogoleService
 from utils.jwt import create_cookie
+from django.http import HttpResponseRedirect
 import json
 # Create your views here.
 class EmailView(APIView):
@@ -24,8 +25,8 @@ class EmailView(APIView):
             email_service = emailService()
             user = email_service.verify_email_token(email)
 
-            if user:
-                return JsonResponse({"success":True,"message": "Email is verify!"},status = 200)
+            if user["success"]:
+                return HttpResponseRedirect("http://localhost:3000/login")
             else:
                 return JsonResponse({"success":False,"error": "unverified Email"}, status=400)
 

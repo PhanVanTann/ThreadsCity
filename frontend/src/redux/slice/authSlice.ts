@@ -5,7 +5,7 @@ const authSlice = createSlice({
   initialState: {
     // Login state
     login: {
-      currentUser: null as { isVerified?: boolean } | null,
+      currentUser: null,
       isFetching: false,
       error: false,
       success: false,
