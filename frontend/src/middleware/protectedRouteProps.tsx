@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { getUser } from "../redux/api_request/user_api";
+// import { getUser } from "../redux/api_request/user_api";
 import { useDispatch, useSelector } from "react-redux";
 // import LoadingScreen from "../components/LoadingScreen";
 

@@ -1,5 +1,5 @@
 import { RiSearch2Line } from "react-icons/ri";
-import {usertest } from '../datatest.ts'; // Adjust the import path as necessary
+import {usertest } from '../datatest'; // Adjust the import path as necessary
 
 export default function Search() {
  

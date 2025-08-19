@@ -1,7 +1,6 @@
-import { div } from "framer-motion/client";
-import { Outlet } from "react-router";
+import { Outlet } from "react-router-dom";
 import Header from "./components/header";
-import { AuthProvider } from "~/context/authContext";
+
 
 export default function dashBoardLayout() {
   return (
