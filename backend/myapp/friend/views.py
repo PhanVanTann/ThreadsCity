@@ -1,0 +1,16 @@
+from django.shortcuts import render
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from .services import FriendService
+friendService = FriendService()
+# Create your views here.
+class FriendView(APIView):
+    def post(self,request):
+        follower_id = request.data.get('follower_id')
+        followee_id = request.data.get('followee_id')
+        result = friendService.create_friend(follower_id,followee_id)
+        return JsonResponse(result,status = 201)
+    def get(self,request):
+        user_id = request.GET.get('user_id') 
+        result = friendService.get_flowersbyuserid(user_id)
+        return JsonResponse(result,status = 201)
