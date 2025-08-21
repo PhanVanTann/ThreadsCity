@@ -110,7 +110,7 @@ class FriendService(collection):
             )
             followers = {doc['follower_id'] for doc in followers_cursor}
 
-          
+            # 3) Mutual = giao nhau
             mutual_ids = list(followees & followers)
 
             if not mutual_ids:

@@ -6,6 +6,7 @@ from django.conf import settings
 from bson import ObjectId
 from concurrent.futures import ThreadPoolExecutor
 
+
 class collection:
     def __init__(self):
         self.post_collection = mongo.get_collection('posts')
