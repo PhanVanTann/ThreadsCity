@@ -9,6 +9,10 @@ const postSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
+        },
+        createPost:
+        {
+            
         }
     },
     reducers:{

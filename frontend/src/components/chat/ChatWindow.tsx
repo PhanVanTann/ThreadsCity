@@ -41,15 +41,7 @@ export default function ChatWindow({
       else setMediaType(null);
       setMediaFile(url);
     };
-    const toVNTime = (utc: string) => {
-  const date = new Date(utc);
-  // cộng thêm 7 tiếng
-  date.setHours(date.getHours() );
-  return `${date.getHours().toString().padStart(2, "0")}:${date
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")} `;
-};
+   
   
     const sendNow = () => {
       const t = text.trim();
@@ -95,7 +87,12 @@ export default function ChatWindow({
                   )}
                   {m.text && <div className="whitespace-pre-wrap">{m.text}</div>}
                   <div className="text-[10px] opacity-70 mt-1 text-right">
-                    {toVNTime(m.created_at)}
+                   {new Date(m.created_at).toLocaleTimeString("vi-VN", {
+  timeZone: "Asia/Ho_Chi_Minh",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+})}
                     </div>
                 </div>
               </div>
