@@ -5,13 +5,18 @@ from .services import CensorshipService
 
 # Create your views here.
 class CensorshipView(APIView):
+    censorship_service = CensorshipService()
     def post(self, request):
         data = request.data
-        censorship_service = CensorshipService()
+        
 
-        result = censorship_service.create_post(data)
+        result = self.censorship_service.create_post(data)
         print("Image Censorship Result:", result)
         if result['success']:
-            return JsonResponse(result, status=200)
+            return JsonResponse(result, status=201)
         else:
             return JsonResponse({"error": result['error']}, status=500)
+    
+    def get(self,request):
+        result  = self.censorship_service.get_listpost()
+        return JsonResponse(result, status=200)
