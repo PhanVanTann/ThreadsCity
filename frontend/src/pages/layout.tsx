@@ -1,5 +1,5 @@
 import { Outlet } from "react-router";
-import Message from "../components/message";
+import Message from "../components/chat/MessageWidget";
 import Sidebar from "../components/sidebar";
 // import { AuthProvider } from "~/context/authContext";
 
