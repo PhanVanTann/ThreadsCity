@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import Login from './auth/login'
 import Home from './pages/home'
 import Profile from './pages/profileUser'
 import DefaultLayout from '../src/pages/layout'
@@ -11,7 +12,6 @@ import PostProcessing from './admin/postprocessing'
 import DashBoard from './admin/dashboard'
 import Loading from './components/loading'
 import Register from './auth/register'
-import Login from './auth/login'
 function App() {
   return (
     <Suspense fallback={<Loading />}>

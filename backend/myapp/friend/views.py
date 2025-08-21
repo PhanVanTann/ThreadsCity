@@ -13,4 +13,10 @@ class FriendView(APIView):
     def get(self,request):
         user_id = request.GET.get('user_id') 
         result = friendService.get_flowersbyuserid(user_id)
-        return JsonResponse(result,status = 201)
+        return JsonResponse(result,status = 200)
+
+class ListFriendView(APIView):
+    def get(self,request):
+        user_id = request.GET.get('user_id') 
+        result = friendService.getlistfriend(user_id)
+        return JsonResponse(result,status = 200)
