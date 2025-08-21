@@ -25,6 +25,8 @@ export default function Register() {
     // if (!form.phone) newErrors.phone = "Số điện thoại không được để trống";
     if (!form.password) newErrors.password = "Mật khẩu không được để trống";
     if (form.password.length < 6) newErrors.password = "Mật khẩu phải từ 6 ký tự";
+    if (form.rePassword.length < 6) newErrors.rePassword = "Mật khẩu phải từ 6 ký tự";
+    if (!form.rePassword) newErrors.rePassword = "Mật khẩu không được để trống";
     if (form.password !== form.rePassword) newErrors.rePassword = "Mật khẩu nhập lại không khớp";
     return newErrors;
   }
@@ -73,7 +75,7 @@ export default function Register() {
                         onChange={handleChange}
                         className="w-[300px] p-2 border border-[#353535] rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535]"
                     />
-                     {errors.first_name && <span className="text-red-500 text-xs">{errors.first_name}</span>}
+                     {(errors.first_name || !form.first_name) && <span className="text-red-500 text-xs">{errors.first_name}</span>}
                        <input
                         id="last_name"
                         type="text"
@@ -82,7 +84,7 @@ export default function Register() {
                         onChange={handleChange}
                         className="w-[300px] p-2 border border-[#353535] rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535]"
                     />
-                    {errors.last_name && <span className="text-red-500 text-xs">{errors.last_name}</span>}
+                    {(errors.last_name || !form.last_name) && <span className="text-red-500 text-xs">{errors.last_name}</span>}
                         <input
                         id="email"
                         type="text"
@@ -91,14 +93,8 @@ export default function Register() {
                         onChange={handleChange}
                         className="w-[300px] p-2 border border-[#353535] rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535]"
                     />
-                    {errors.email && <span className="text-red-500 text-xs">{errors.email}</span>}
-                        {/* <input
-                        id="phone number"
-                        type="text"
-                        placeholder="Phone number"
-                        className="w-[300px] p-2 border border-[#353535] rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535]"
-                    />
-                    {errors.phone && <span className="text-red-500 text-xs">{errors.phone}</span>} */}
+                    {(errors.email || !form.email) && <span className="text-red-500 text-xs">{errors.email}</span>}
+                       
                    <div className="relative w-[300px]">
                         <input
                           id="password"
@@ -117,7 +113,7 @@ export default function Register() {
                           {showPassword ? "Ẩn" : "Hiện"}
                         </button>
                    </div>
-                    {errors.password && <span className="text-red-500 text-xs">{errors.password}</span>}
+                    {(errors.password || !form.password) && <span className="text-red-500 text-xs">{errors.password}</span>}
                        <div className="relative w-[300px]">
                         <input
                           id="rePassword"
@@ -136,7 +132,7 @@ export default function Register() {
                           {showPassword ? "Ẩn" : "Hiện"}
                         </button>
                    </div>
-                     {errors.rePassword && <span className="text-red-500 text-xs">{errors.rePassword}</span>}
+                     {(errors.rePassword || !form.rePassword) && <span className="text-red-500 text-xs">{errors.rePassword}</span>}
                       <button
                           type="submit"
                           className="w-[300px] bg-blue-600 text-white mt-[20px] select-none cursor-pointer p-2 rounded-lg hover:bg-blue-500 transition-colors">
@@ -158,7 +154,7 @@ export default function Register() {
             <p className="text-[18px]  text-gray-500 select-none">
               Bạn đã có tài khoản?
               
-              <span className="text-white"><NavLink to="/login"> Đăng ký</NavLink></span>
+              <span className="text-white"><NavLink to="/login"> Đăng nhập</NavLink></span>
                
              
             </p>

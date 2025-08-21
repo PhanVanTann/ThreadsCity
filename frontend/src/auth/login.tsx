@@ -13,14 +13,31 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
   
-  // const { login } = useAuth()
+   function validate() {
+    const newErrors: { [key: string]: string } = {};
+    if (!form.email) newErrors.email = "Email không được để trống";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Email không hợp lệ";
+    // if (!form.phone) newErrors.phone = "Số điện thoại không được để trống";
+    if (!form.password) newErrors.password = "Mật khẩu không được để trống";
+    return newErrors;
+  }
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm({ ...form, [e.target.id.replace(" ", "")]: e.target.value });
+   }
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      alert("Vui lòng nhập đầy đủ thông tin");
-      return;
-    } else  {
+    const v = validate();
+    setErrors(v);
+    if (Object.keys(v).length > 0) return;
+    
+     else  {
       const user = {
         email,
         password,
@@ -38,19 +55,21 @@ export default function Login() {
            <form onSubmit={handleSubmit} className="flex flex-col items-center  gap-1 mt-4">
                    
                     <input
-                        id="username"
+                        id="email"
                         type="text"
-                        value={email} 
-                        onChange={e => setEmail(e.target.value)}
-                        placeholder="Username, phone number or email"
+                        value={form.email} 
+                        onChange={handleChange}
+                        placeholder="Email"
                         className="w-[300px] p-2 border border-[#353535] rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535]"
                     />
+                    {(errors.email || !form.email)   && <span className="text-red-500 text-xs">{errors.email}</span>}
+
                    <div className="relative w-[300px]">
                         <input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          value={password} 
-                          onChange={e => setPassword(e.target.value)}
+                          value={form.password} 
+                          onChange={handleChange}
                           placeholder="Password"
                           className="w-full p-2 border border-[#353535] rounded pr-10 select-none focus:outline-none focus:ring-0 focus:border-[#353535]"
                         />
@@ -63,10 +82,12 @@ export default function Login() {
                           {showPassword ? "Ẩn" : "Hiện"}
                         </button>
                    </div>
+                    {(errors.password ||   !password) && <span className="text-red-500 text-xs">{errors.password}</span>}
+
                       <button
                           type="submit"
                           className="w-[300px] bg-blue-600 text-white mt-[20px] select-none cursor-pointer p-2 rounded-lg hover:bg-blue-500 transition-colors">
-                        Đăng ký
+                        Đăng nhập
                       </button>
                     <div className="flex items-center text-[12px] select-none"><div className="h-[1px] w-[100px] bg-[#5c5c5c] mr-5"></div> OR<div className="h-[1px] w-[100px] bg-[#5c5c5c] ml-5"></div></div>
              </form>
