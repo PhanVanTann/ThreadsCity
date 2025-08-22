@@ -29,21 +29,21 @@ export default function Login() {
   }
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm({ ...form, [e.target.id.replace(" ", "")]: e.target.value });
+   
    }
-  
+   console.log("form", form)
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     const v = validate();
     setErrors(v);
     if (Object.keys(v).length > 0) return;
     
-     else  {
-      const user = {
-        email,
-        password,
-      }
-      loginUser(user, dispatch, navigate)
-    }
+    
+    
+      loginUser(form, dispatch, navigate)
+
+    
   };
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-[#000] gap-5">

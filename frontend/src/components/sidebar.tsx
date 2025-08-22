@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { FaThreads,FaPlus,FaRegHeart } from "react-icons/fa6";
 import { RiHome4Line,RiSearch2Line,RiMenu4Fill } from "react-icons/ri";
-import Logout from "./logout";
+import Logout from "../auth/logout";
 import { BsPerson } from "react-icons/bs";
 import { NavLink, useParams } from "react-router";
 import Post from "./postmodel";
@@ -92,7 +92,7 @@ export default function Sidebar() {
             <ul className="p-2">  
               <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer">Cài đặt</li>
               <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer}">Trợ giúp</li>          
-              <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer flex"><Logout/> Đăng xuất </li>
+              <li className=""><Logout/>  </li>
             </ul>
           </div>
         )}

@@ -15,6 +15,7 @@ import {
 export const loginUser = async (user: any, dispatch: any, navigate: any) => {
   dispatch(loginStart());
   try {
+    console.log('user',user)
     const res = await axiosInstance.post("/auth/login/", user);
     console.log('datas',res.data)
     dispatch(loginSuccess(res.data));
