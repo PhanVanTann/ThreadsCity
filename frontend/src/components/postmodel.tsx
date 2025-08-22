@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { createPost } from "src/redux/api/apiRequestPost";
 import { useDispatch,useSelector} from "react-redux";
 import { getUserById } from "src/redux/api/apiRequestUser";
+import LoadingPost from "src/pages/loadingPost/LoadingPost";
 
 
 export default function Postmodel({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -14,9 +15,11 @@ export default function Postmodel({ open, onClose }: { open: boolean; onClose: (
   const [showPicker, setShowPicker] = useState(false);
   const [content, setContent] = useState("");
   const dispatch = useDispatch()
-  
   const userData = useSelector((state:any)=>state.user.getUserById?.data?.data)
-const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.user_id) as string | undefined;
+  const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.user_id) as string | undefined;
+  const isLoading   = useSelector((s:any)=> s.post.createPost?.isFetching);
+  const createOk    = useSelector((s:any)=> s.post.createPost?.success);
+  const createFail  = useSelector((s:any)=> s.post.createPost?.error);
  if (!currentUserId) {
         toast.error("Không tìm thấy user_id, vui lòng đăng nhập lại.");
         return;
@@ -34,20 +37,18 @@ const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.
         toast.error("Không tìm thấy user_id, vui lòng đăng nhập lại.");
         return;
       }
-    try {
-
-      createPost({"user_id":currentUserId,"text":content,"file":files[0]},dispatch)
-
+      await createPost({"user_id":currentUserId,"text":content,"file":files[0]},dispatch)
+  }
+   useEffect(()=>{
+    if (createOk) {
       toast.success("Đăng bài thành công!");
       setContent("");
       setFiles([]);
       onClose();
-      
-    } catch (err) {
-      console.error(err);
+    } else if (createFail) {
       toast.error("Đăng bài thất bại!");
     }
-  }
+  }, [createOk, createFail, onClose]);
 useEffect(()=>{
     getUserById(currentUserId,dispatch)
   },[])
@@ -55,7 +56,9 @@ useEffect(()=>{
  
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-100">
+    <>
+      {isLoading?(<LoadingPost loading={isLoading}></LoadingPost>):(
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-100">
       <div className="bg-white dark:bg-[#181818] border-2 border-[#383939] rounded-lg w-[700px] shadow-lg relative">
         {/* header */}
         <div className="flex justify-between items-center border-b-2 border-[#383939] p-3">
@@ -146,6 +149,10 @@ useEffect(()=>{
           </button>
         </form>
       </div>
+       
     </div>
+      )}
+    </>
+    
   );
 }

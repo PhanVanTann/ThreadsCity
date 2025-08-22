@@ -6,6 +6,7 @@ import { formatTimeAgo } from '../utils/formatIimeAgo.ts';
 import HeartButton from './heart';
 import CommentList from './commentList';
 
+
 type Post = {
   _id: string;
   user_id: string;
@@ -26,7 +27,6 @@ const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
 
 export default function Post({ post }: { post: Post }) {
   const [openComment, setOpenComment] = useState(false);
-
   // chịu trường hợp BE lỡ trả media là mảng: lấy phần tử đầu
   const mediaUrl = useMemo(() => {
     const raw = post.media as unknown;

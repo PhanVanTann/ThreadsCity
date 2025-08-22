@@ -51,6 +51,14 @@ export default function ConversationList({
       .sort((a, b) => b.last.created_at.localeCompare(a.last.created_at));
   }, [friends, messages, me]);
 
+  if (!friends || friends.length === 0) {
+    return (
+      <div className="p-4 text-sm text-gray-500">
+        Chưa có bạn bè. Hãy kết bạn để bắt đầu chat.
+      </div>
+    );
+  }
+
   return (
     <div>
       {rows.map(({ other, last }) => (
@@ -61,13 +69,20 @@ export default function ConversationList({
             selectedId === other._id ? "bg-gray-100 dark:bg-[#2b2b2b]" : "hover:bg-gray-100 dark:hover:bg-[#2b2b2b]"
           }`}
         >
-          <img src={other.avatar || "https://i.pravatar.cc/150?u=" + other._id} className="object-cover rounded-full w-10 h-10" />
+          <img
+            src={other.avatar || "https://i.pravatar.cc/150?u=" + other._id}
+            className="object-cover rounded-full w-10 h-10"
+          />
           <div className="flex-1 min-w-0">
             <div className="flex justify-between">
               <span className="text-sm font-medium">{other.name}</span>
-              <span className="text-[11px] text-gray-500">{timeAgo(last.created_at)}</span>
+              <span className="text-[11px] text-gray-500">
+                {timeAgo(last.created_at)}
+              </span>
             </div>
-            <span className="block text-[12px] text-gray-500 truncate">{lastMessagePreview(last)}</span>
+            <span className="block text-[12px] text-gray-500 truncate">
+              {lastMessagePreview(last)}
+            </span>
           </div>
         </div>
       ))}

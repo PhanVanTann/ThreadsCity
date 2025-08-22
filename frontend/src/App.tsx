@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes,Navigate } from 'react-router-dom'
 import Login from './auth/login'
 import Home from './pages/home'
 import Profile from './pages/profileUser'
@@ -13,6 +13,7 @@ import DashBoard from './admin/dashboard'
 import Loading from './components/loading'
 import Register from './auth/register'
 import {Toaster} from 'react-hot-toast'
+import LoadingPost from './pages/loadingPost/LoadingPost'
 function App() {
   return (
     <Suspense fallback={<Loading />}>
@@ -20,10 +21,11 @@ function App() {
       <Routes>
         <Route element={<DefaultLayout />}>
           <Route path='/' element={<Home />} />
-          <Route path='/profile' element={<Profile />} />
+          <Route path='/profile' element={<Navigate to="/" replace/>} />
+          <Route path='/profile/:userId' element={<Profile />} />
           <Route path='/search' element={<Search />} />
           <Route path='/notifications' element={<Notifications />} />
-         
+          <Route path='/loadingpost' element={<LoadingPost />} />
 
 
         </Route>

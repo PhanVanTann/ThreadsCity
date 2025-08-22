@@ -195,3 +195,13 @@ class CensorshipService(collection):
             return {"success": True, "data": datas}
         except Exception as e:
             return {"success": False, "error": str(e)} 
+    def getPostValidByUser(self,user_id):
+        try:
+            cursor = self.post_collection.find({"status": "valid","user_id":user_id})
+            datas = []
+            for d in cursor:
+                d['_id'] = str(d['_id'])
+                datas.append(d)
+            return {"success": True, "data": datas}
+        except Exception as e:
+            return {"success": False, "error": str(e)} 
