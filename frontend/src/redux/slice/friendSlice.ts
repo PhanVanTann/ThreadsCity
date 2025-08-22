@@ -9,6 +9,12 @@ const friendSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
+        },
+        getFollowsByUserId:{
+            data:[],
+            isFetching: false,
+            error: false,
+            success: false,
         }
     },
     reducers:{
@@ -30,6 +36,24 @@ const friendSlice = createSlice({
             state.getlistFriend.error= true;
             state.getlistFriend.success= false;
         },
+         getFollowsByUserIdStart:(state) => {
+            state.getFollowsByUserId.data=[];
+            state.getFollowsByUserId.isFetching = true;
+            state.getFollowsByUserId.error= false;
+            state.getFollowsByUserId.success= false;
+        },
+        getFollowsByUserIdSuccess:(state,action) => {
+            state.getFollowsByUserId.data=action.payload;
+            state.getFollowsByUserId.isFetching = false;
+            state.getFollowsByUserId.error= false;
+            state.getFollowsByUserId.success= true;
+        },
+        getFollowsByUserIdFailure:(state) => {
+            state.getFollowsByUserId.data=[];
+            state.getFollowsByUserId.isFetching = false;
+            state.getFollowsByUserId.error= true;
+            state.getFollowsByUserId.success= false;
+        },
 
     },
 
@@ -38,6 +62,9 @@ const friendSlice = createSlice({
 export const {
     getlistFriendStart,
     getlistFriendSuccess,
-    getlistFriendFailure
+    getlistFriendFailure,
+    getFollowsByUserIdFailure,
+    getFollowsByUserIdStart,
+    getFollowsByUserIdSuccess
 } = friendSlice.actions;
 export default friendSlice.reducer;

@@ -7,6 +7,7 @@ from bson import ObjectId
 from concurrent.futures import ThreadPoolExecutor
 
 
+
 class collection:
     def __init__(self):
         self.post_collection = mongo.get_collection('posts')
@@ -68,9 +69,18 @@ class CensorshipService(collection):
 
         text_present = bool(text_content)
 
-        post_data = {
+        
+
+        try:
+            user = self.user_collection.find_one({"_id": ObjectId(user_id)})
+            if not user:
+                return {"success": False, "error": "User not found."}
+            post_data = {
             "user_id": user_id,
-            "text": text_content if text_present else None,
+            "avatar":user["avatar"] or None,
+            "first_name":user["first_name"],
+            "last_name":user["last_name"],
+            "text": None,
             "media": media_url,
             "is_video": bool(media_type == "video"),
             "flag": False,
@@ -79,12 +89,6 @@ class CensorshipService(collection):
             "total_comment": 0,
             "created_at": datetime.now(),
         }
-
-        try:
-            user = self.user_collection.find_one({"_id": ObjectId(user_id)})
-            if not user:
-                return {"success": False, "error": "User not found."}
-
             post_info = self.post_collection.insert_one(post_data)
             postid = str(post_info.inserted_id)
 
@@ -146,7 +150,7 @@ class CensorshipService(collection):
                     })
             if censoreds:
                 self.post_collection.update_one({"_id": ObjectId(postid)},
-                                                {"$set": {"status": "not valid", "flag": True}})
+                                                {"$set": {"status": "not valid", "flag": True,"text":text_result["data"]["result"]["masked_text"]or None}})
                 return {
                     "success": True,
                     "post_id": postid,
@@ -156,8 +160,9 @@ class CensorshipService(collection):
                     "text_analysis": (text_result.get("data") if text_result else None)  # passthrough
                 }
             elif awaiting and not censoreds:
+
                 self.post_collection.update_one({"_id": ObjectId(postid)},
-                                                {"$set": {"status": "awaiting", "flag": True}})
+                                                {"$set": {"status": "awaiting", "flag": True,"text":text_result["data"]["result"]["masked_text"]or None}})
                 return {
                     "success": True,
                     "post_id": postid,
@@ -168,7 +173,7 @@ class CensorshipService(collection):
                 }
             else:
                 self.post_collection.update_one({"_id": ObjectId(postid)},
-                                                {"$set": {"status": "valid", "flag": False}})
+                                                {"$set": {"status": "valid", "flag": False,"text":text_result["data"]["result"]["masked_text"]or None}})
                 return {
                     "success": True,
                     "media":{
@@ -179,3 +184,24 @@ class CensorshipService(collection):
 
         except Exception as e:
             return {"success": False, "message": "Error in censorship", "error": str(e)}
+
+    def get_listpost(self):
+        try:
+            cursor = self.post_collection.find({"status": "valid"})
+            datas = []
+            for d in cursor:
+                d['_id'] = str(d['_id'])
+                datas.append(d)
+            return {"success": True, "data": datas}
+        except Exception as e:
+            return {"success": False, "error": str(e)} 
+    def getPostValidByUser(self,user_id):
+        try:
+            cursor = self.post_collection.find({"status": "valid","user_id":user_id})
+            datas = []
+            for d in cursor:
+                d['_id'] = str(d['_id'])
+                datas.append(d)
+            return {"success": True, "data": datas}
+        except Exception as e:
+            return {"success": False, "error": str(e)} 

@@ -5,10 +5,12 @@ import { RiHome4Line,RiSearch2Line,RiMenu4Fill } from "react-icons/ri";
 import Logout from "../auth/logout";
 import { BsPerson } from "react-icons/bs";
 import { NavLink, useParams } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import Post from "./postmodel";
 export default function Sidebar() {
     const [openPost, setOpenPost] = useState(false);
     const [openMenu, setOpenMenu] = useState(false);
+    const userId = useSelector((state: any) => state.auth.login.currentUser?.user_id)
     // const userId = localStorage.getItem("user_id")  || "";
   const handleOpenmenu = () => {
     setOpenMenu(!openMenu);
@@ -75,7 +77,7 @@ export default function Sidebar() {
                </div>
             </NavLink>
             {/* profile */}
-               <NavLink to={`/profile`} end className={({ isActive, isPending, isTransitioning }) =>
+               <NavLink to={`/profile/${userId}`} end className={({ isActive, isPending, isTransitioning }) =>
                     [
                       isPending ? "pending" : "",
                       isActive ? "active" : "noactive",

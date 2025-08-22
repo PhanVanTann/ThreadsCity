@@ -59,16 +59,15 @@ export default function MessageWidget() {
     console.log("datamerge",merged)
   
     const hist: MessageDoc[] = merged.map((m: any) => ({
-      id: (m._id ? String(m._id) : `${m.created_at}-${m.send_id}-${m.text ?? ""}`), // key ổn định
-      user_id: String(currentUserId!),
-      send_user_id: String(m.send_id),
-      receive_user_id: String(m.receiver_id),
-      text: m.text || undefined,
-      image: m.media?.image || undefined,
-      video: m.media?.video || undefined,
-      created_at: new Date().toISOString(),
-    }));
-  
+  id: (m._id ? String(m._id) : `${m.created_at}-${m.send_id}-${m.text ?? ""}`),
+  user_id: String(currentUserId!),
+  send_user_id: String(m.send_id),
+  receive_user_id: String(m.receiver_id),
+  text: m.text || undefined,
+  image: m.media?.image || undefined,
+  video: m.media?.video || undefined,
+  created_at: m.created_at
+}));
     setMessages(prev => {
       // 1) put prev vào map (giữ optimistic đang hiển thị)
       const map = new Map<string, MessageDoc>();
@@ -83,7 +82,7 @@ export default function MessageWidget() {
       }
       // 3) sort theo thời gian
       const arr = Array.from(map.values());
-      arr.sort((a, b) => a.created_at.localeCompare(b.created_at));
+        arr.sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       return arr;
     });
   }, [historyRes, historyRecvRes, currentUserId]);

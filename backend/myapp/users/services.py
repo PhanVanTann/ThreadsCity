@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from utils.sendemail import send_verify_email
 from utils.jwt import create_email_token
 from datetime import datetime
+from bson import ObjectId
 
 class collectionUser:
     def __init__(self):
@@ -34,7 +35,7 @@ class UserService(collectionUser):
                 "first_name": user_data.get("first_name"),
                 "last_name": user_data.get("last_name"),
                 "role": "user",
-                "avatar":None,
+                "avatar":"https://res.cloudinary.com/debzpay3s/image/upload/v1755841904/avatar-trang-3_qamssw.jpg",
                 "is_verified": False,
                 "is_google_account": False,
                 "created_at": datetime.now(),
@@ -62,5 +63,14 @@ class UserService(collectionUser):
         except Exception as e:
             print(f"Error creating user: {e}")
             return None
-
+    def getUserById(self,user_id):
+        try:
+            userdata = self.collection_users.find_one({"_id":ObjectId(user_id)},{"_id":1,"email":1,"first_name":1,"last_name":1,"role":1,"avatar":1})
+            userdata["_id"] = str(userdata["_id"])
+            return {
+                "success":True,
+                "data":userdata
+            }
+        except Exception as e:
+            print(e)
 userService = UserService()

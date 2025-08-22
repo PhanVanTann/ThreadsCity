@@ -48,7 +48,7 @@ def predict_image(image_path, model, name_model, postid):
     return {
         "message": "Prediction successfully",
         "postid": postid,
-        "result": best_detection,
+        "result": best_detection, 
         "cloud_url": cloud_url
     }
 
@@ -125,4 +125,5 @@ def download_file(video_url, save_path):
         return save_path
     else:
         print("❌ Không thể tải video, mã lỗi:", response.status_code)
+        return None 
 

@@ -10,7 +10,13 @@ class UserView(APIView):
 
     def post(self, request,*args, **kwargs): 
         user_data = request.data
+        if not user_data:
+            return JsonResponse({"error":"no data"},status=400)
         user_infor = userService.create_user(user_data)
         if not user_infor:
             return JsonResponse({"error": "Failed to create user."}, status=400)      
         return JsonResponse(user_infor, status=201)
+    def get(self,request):
+        user_id = request.GET.get("user_id")
+        result = userService.getUserById(user_id)
+        return JsonResponse(result,status=200)
