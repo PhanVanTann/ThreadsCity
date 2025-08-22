@@ -12,15 +12,18 @@ import PostProcessing from './admin/postprocessing'
 import DashBoard from './admin/dashboard'
 import Loading from './components/loading'
 import Register from './auth/register'
+import {Toaster} from 'react-hot-toast'
 function App() {
   return (
     <Suspense fallback={<Loading />}>
+      <Toaster position="top-center" />
       <Routes>
         <Route element={<DefaultLayout />}>
           <Route path='/' element={<Home />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/search' element={<Search />} />
           <Route path='/notifications' element={<Notifications />} />
+         
 
 
         </Route>
@@ -39,6 +42,7 @@ function App() {
         {/* <Route path='*' element={<NotFound />} /> */}
       </Routes>
     </Suspense>
+    
   )
 }
 

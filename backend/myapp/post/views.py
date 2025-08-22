@@ -7,9 +7,12 @@ from .services import CensorshipService
 class CensorshipView(APIView):
     censorship_service = CensorshipService()
     def post(self, request):
-        data = request.data
+        data={
+            "user_id" : request.data.get('user_id'),
+            "text"    : request.data.get('text'),
+            "media"   : request.FILES.get('media'), 
+        }
         
-
         result = self.censorship_service.create_post(data)
         print("Image Censorship Result:", result)
         if result['success']:

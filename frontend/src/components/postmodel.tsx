@@ -1,206 +1,151 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaImages } from "react-icons/fa6";
 import { FaRegSmile } from "react-icons/fa";
 import EmojiPopup from "./emojipick";
 import toast from "react-hot-toast";
+import { createPost } from "src/redux/api/apiRequestPost";
+import { useDispatch,useSelector} from "react-redux";
+import { getUserById } from "src/redux/api/apiRequestUser";
+
+
 export default function Postmodel({ open, onClose }: { open: boolean; onClose: () => void }) {
-      const [files, setFiles] = useState<File[]>([]);
-      const [showPicker, setShowPicker] = useState(false);
-      const [content, setContent] = useState("");
-        
-      
-      const handleEmojiClick = (emoji: any) => {
-            setContent((prev) => prev + emoji.emoji);
-        };
-    
-    async function handleSubmit(e: React.FormEvent) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [showPicker, setShowPicker] = useState(false);
+  const [content, setContent] = useState("");
+  const dispatch = useDispatch()
+  
+  const userData = useSelector((state:any)=>state.user.getUserById?.data?.data)
+const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.user_id) as string | undefined;
+ if (!currentUserId) {
+        toast.error("Không tìm thấy user_id, vui lòng đăng nhập lại.");
+        return;
+      }
+
+  const handleEmojiClick = (emoji: any) => setContent((prev) => prev + emoji.emoji);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!content.trim() && files.length === 0) {
       toast.error("Vui lòng nhập nội dung hoặc chọn media");
       return;
     }
+      if (!currentUserId) {
+        toast.error("Không tìm thấy user_id, vui lòng đăng nhập lại.");
+        return;
+      }
+    try {
 
-   
-    const fd = new FormData();
-fd.append("content", content);
-files.forEach((f) => fd.append("files", f)); // hoặc "files[]", tùy backend
+      createPost({"user_id":currentUserId,"text":content,"file":files[0]},dispatch)
 
-// Log nhanh state (trước khi gửi)
-console.log("Payload preview:", {
-  content,
-  files: files.map((f) => ({
-    name: f.name,
-    type: f.type,
-    size: f.size,
-  })),
-});
-
-// Log FormData chuẩn
-for (const [key, value] of fd.entries()) {
-  if (value instanceof File) {
-    console.log("FD:", key, {
-      name: value.name,
-      type: value.type,
-      size: value.size,
-    });
-  } else {
-    console.log("FD:", key, value);
+      toast.success("Đăng bài thành công!");
+      setContent("");
+      setFiles([]);
+      onClose();
+      
+    } catch (err) {
+      console.error(err);
+      toast.error("Đăng bài thất bại!");
+    }
   }
-}
+useEffect(()=>{
+    getUserById(currentUserId,dispatch)
+  },[])
+  if (!open) return null;
+ 
 
-// Nếu cần kiểm tra riêng mảng files
-console.log("FD files[]:", fd.getAll("files"));
-
-  //   try {
-  //     const res = await axiosInstance.post("/posts/", fd, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //       withCredentials: true, // nếu dùng cookie HttpOnly
-  //       onUploadProgress: (p) => {
-  //         // tui thêm demo progress nếu bạn muốn
-  //         // const percent = Math.round((p.loaded * 100) / (p.total ?? 1));
-  //         // setProgress(percent);
-  //       }
-  //     });
-  //     toast.success("Đăng bài thành công!");
-  //     // Optional: clear form
-  //     setContent("");
-  //     setFiles([]);
-  //     onClose();
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("Đăng bài thất bại!");
-  //   }
-   }
-    
-    if (!open) return null;
-
-
-    return (
-   <div className="fixed inset-0 bg-black/30 bg-blend-60 flex items-center justify-center z-100">
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-100">
       <div className="bg-white dark:bg-[#181818] border-2 border-[#383939] rounded-lg w-[700px] shadow-lg relative">
-        <div className="flex justify-between items-center border-b-2  border-[#383939] p-3">
-            <button
-                    className=" text-white cursor-pointer"
-                    onClick={onClose}
-                    >
-                    Đóng
-            </button>
-            <h2 className="text-lg font-bold ">Đăng bài mới</h2>
-            <div></div>
+        {/* header */}
+        <div className="flex justify-between items-center border-b-2 border-[#383939] p-3">
+          <button className="text-white cursor-pointer" onClick={onClose}>Đóng</button>
+          <h2 className="text-lg font-bold">Đăng bài mới</h2>
+          <div />
         </div>
-          <div className="flex items-center p-4 border-b-2 border-[#383939]">
-                <img
-                src="z4278794679219_881d17bfbc15d3071b7720cfd3f0283c.jpg" // Replace with actual avatar path
-                alt="avatar"
-                className="object-cover rounded-[50%] w-[40px] h-[40px]  mr-3"
-                />
-                <span className="text-gray-700 dark:text-white font-bold">Username</span>
-                
-            </div>
+
+        {/* user row */}
+        <div className="flex items-center p-4 border-b-2 border-[#383939]">
+          <img src={userData.avatar||"https://i.pravatar.cc/150?img=1"} className="object-cover rounded-full w-10 h-10 mr-3" />
+          <span className="text-gray-700 dark:text-white font-bold">{`${userData.last_name} ${userData.first_name} `}</span>
+        </div>
+
+        {/* preview */}
         {files.length > 0 && (
-            <div className="p-4 flex gap-4 flex-wrap">
-                {files.map((file, idx) =>
-                file.type.startsWith("image/") ? (
-                    <img
-                    key={idx}
-                    src={URL.createObjectURL(file)}
-                    alt={`Selected ${idx}`}
-                    className="w-[150px] h-auto rounded-lg mb-4 cursor-pointer"
-                    onContextMenu={e => {
-                        e.preventDefault();
-                        setFiles(files => files.filter((_, i) => i !== idx));
-                    }}
-                    title="Nhấn chuột phải để xóa ảnh"
-                    />
-                ) : file.type.startsWith("video/") ? (
-                    <video
-                    key={idx}
-                    src={URL.createObjectURL(file)}
-                    controls
-                    className="w-[150px] h-auto rounded-lg mb-4 cursor-pointer"
-                    onContextMenu={e => {
-                        e.preventDefault();
-                        setFiles(files => files.filter((_, i) => i !== idx));
-                    }}
-                    title="Nhấn chuột phải để xóa video"
-                    />
-                ) : null
-                )}
-            </div>
+          <div className="p-4 flex gap-4 flex-wrap">
+            {files.map((file, idx) =>
+              file.type.startsWith("image/") ? (
+                <img key={idx} src={URL.createObjectURL(file)} className="w-[150px] rounded-lg" />
+              ) : file.type.startsWith("video/") ? (
+                <video key={idx} src={URL.createObjectURL(file)} controls className="w-[150px] rounded-lg" />
+              ) : null
             )}
+          </div>
+        )}
+
+        {/* form */}
         <form onSubmit={handleSubmit}>
-            <div className="flex">   
-                     <label
-                    htmlFor="file-upload"
-                    className="flex  dark:text-[#4d4d4d] cursor-pointer items-center gap-2 cursor-pointer w-[30px] m-2  rounded select-none focus:outline-none focus:ring-0 focus:border-[#353535] bg-[#f5f5f5] dark:bg-[#222]"
-                        >
-                        <FaImages size={30} />
-                    
-                </label>
-                        <input
-                            id="file-upload"
-                            type="file"
-                            className="hidden"
-                            multiple
-                            accept="image/*,video/*" 
-                            title="Chọn ảnh hoặc video"
-                            onChange={async (e) => {
-                                const fileList = e.target.files;
-                                if (fileList && fileList.length > 0) {
-                                    const filesArr = Array.from(fileList);
-                                    const validFiles: File[] = [];
-                                    for (const file of filesArr) {
-                                    if (file.type.startsWith("video/")) {
-                                        const url = URL.createObjectURL(file);
-                                        const video = document.createElement("video");
-                                        video.src = url;
-                                        await new Promise<void>((resolve) => {
-                                        video.onloadedmetadata = () => {
-                                            if (video.duration <= 10) { // Giới hạn 30 giây
-                                            validFiles.push(file);
-                                            } else {
-                                            toast.error("video chỉ được tối đa 30s!");
-                                            }
-                                            URL.revokeObjectURL(url);
-                                            resolve();
-                                        };
-                                        });
-                                    } else {
-                                        validFiles.push(file);
-                                    }
-                                    }
-                                    setFiles(prev => [...prev, ...validFiles]);
-                                }
-                            }}
-                        />
+          <div className="flex">
+            <label htmlFor="file-upload" className="flex items-center gap-2 w-[30px] m-2 cursor-pointer">
+              <FaImages size={30} />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              accept="image/*,video/*"
+              onChange={async (e) => {
+                const fileList = e.target.files;
+                if (!fileList || !fileList.length) return;
+                const arr = Array.from(fileList);
+
+                // ví dụ: giới hạn video ≤ 30s
+                const valid: File[] = [];
+                for (const f of arr) {
+                  if (f.type.startsWith("video/")) {
+                    const url = URL.createObjectURL(f);
+                    const v = document.createElement("video");
+                    v.src = url;
+                    await new Promise<void>((r) => {
+                      v.onloadedmetadata = () => {
+                        if (v.duration <= 30) valid.push(f);
+                        else toast.error("Video tối đa 30 giây!");
+                        URL.revokeObjectURL(url);
+                        r();
+                      };
+                    });
+                  } else {
+                    valid.push(f);
+                  }
+                }
+                setFiles(valid); // chỉ lấy file đầu tiên nếu BE chỉ nhận 1 file: setFiles(valid.slice(0,1))
+              }}
+            />
+
             <button
-                    type="button"
-                    className=" text-xl dark:text-[#4d4d4d] cursor-pointer"
-                    onClick={() => setShowPicker(v => !v)}
-                    tabIndex={-1}
-                    title="Chọn emoji"
-                    >
-                    <FaRegSmile size={28}/>
+              type="button"
+              className="text-xl dark:text-[#4d4d4d] cursor-pointer"
+              onClick={() => setShowPicker((v) => !v)}
+              title="Chọn emoji"
+            >
+              <FaRegSmile size={28} />
             </button>
-            </div>
-               
+          </div>
+
           <textarea
-            className="w-full h-24 p-2  rounded resize-none mb-4 focus:outline-none focus:ring-0 focus:border-[#353535]   text-gray-700 dark:text-white"
+            className="w-full h-24 p-2 rounded resize-none mb-4 focus:outline-none text-gray-700 dark:text-white"
             placeholder="Bạn đang nghĩ gì?"
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={(e) => setContent(e.target.value)}
           />
-         
-            {showPicker && <EmojiPopup onEmojiClick={handleEmojiClick} />}
-          <button
-            type="submit"
-            className="bg-black mb-4 ml-4 text-white px-4 py-2 border-2 border-[#383939] rounded-[15px] hover:bg-black/80 transition-colors"
-          >
+
+          {showPicker && <EmojiPopup onEmojiClick={handleEmojiClick} />}
+
+          <button type="submit" className="bg-black mb-4 ml-4 text-white px-4 py-2 border-2 border-[#383939] rounded-[15px]">
             Đăng bài
           </button>
         </form>
       </div>
     </div>
   );
-    }
+}
