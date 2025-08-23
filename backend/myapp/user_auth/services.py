@@ -5,6 +5,8 @@ from datetime import datetime
 import requests
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
+from google.oauth2 import id_token
+from django.conf import settings
 from utils.jwt import (
     create_access_token,
     create_refresh_token,
@@ -124,15 +126,13 @@ class GoogoleService(collection):
         super().__init__()
         self.user_collection = self.get_user_collection()
 
-    def create_user(self, access_token):
+    def create_user(self, idtoken_str):
         try:
-            user_info = requests.get("https://www.googleapis.com/oauth2/v2/userinfo", headers={
-                "Authorization": f"Bearer {access_token}"
-            })
-            if user_info.status_code != 200:
-                return {"success": False, "message": "Failed to fetch user info from Google."}
-            user_info = user_info.json()
-            email = user_info.get("email")
+            idinfo = id_token.verify_oauth2_token(idtoken_str, requests.Request(),settings.GOOGLE_CLIENT_ID),
+            email = idinfo.get("email")
+            first_name = idinfo.get("family_name")
+            last_name = idinfo.get("given_name")
+            picture = idinfo.get("picture")
             user_data = self.user_collection.find_one({"email": email})
             if user_data:
                 if not user_data.get("is_verified", False):
@@ -154,10 +154,10 @@ class GoogoleService(collection):
             else:
                 request_data = { 
                     "email": email,
-                    "first_name": user_info.get("family_name"),
-                    "last_name": user_info.get("given_name"),
+                    "first_name": first_name,
+                    "last_name": last_name,
                     "role": "user",
-                    "avatar": user_info.get("picture"),
+                    "avatar": picture,
                     "is_verified": True,
                     "is_google_account": True,
                     "is_google_account": True,

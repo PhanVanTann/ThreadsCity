@@ -112,7 +112,7 @@ console.log("followers", followers.length);
                     }`}
                     onClick={() => handleClick(1)}
                   >
-                    Bạn bè
+                    Người Theo Dõi
                   </div>
                    
                 </div>
@@ -138,8 +138,8 @@ console.log("followers", followers.length);
                                       <p className="text-gray-500 text-sm"> {user.follow} người theo dõi</p>
                                     </div>
                                     <div className="border  border-[#3d3d3d] rounded-full px-4 py-1 text-sm text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-[#3d3d3d] transition-colors">
-                                      <button>nhắn tin</button>
-                                    </div>
+                                      <button className ="cursor-pointer" >Huỷ Theo Dõi</button>
+                                    </div>  
                                   </div>
                                 ))}
                       </div>

@@ -85,12 +85,12 @@ class UserLogoutView(APIView):
 
 class GoogleLoginView(APIView):
     def post(self, request):
-        access_token = request.data.get('access_token')
+        idtoken_str = request.data.get('idtoken')
         if not access_token:
             return JsonResponse({"error": "Access token is required"}, status=400)
 
         google_service = GoogoleService()
-        response = google_service.create_user(access_token)
+        response = google_service.create_user(idtoken_str)
         
         if response['success']:
             access_token = response["access_token"]
