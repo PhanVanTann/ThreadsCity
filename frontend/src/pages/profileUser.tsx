@@ -4,10 +4,11 @@ import { mergeMediaToPosts } from '../components/postlist';
 import { poststest,usertest } from '../datatest';
 import { useNavigate } from 'react-router'; 
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from 'react';
+import { useEffect,useMemo } from 'react';
 import { getUserById } from 'src/redux/api/apiRequestUser';
 import { getFollowsByUserId } from 'src/redux/api/apiRequestFriend';
 import { useParams } from "react-router-dom";
+import { getPostValidById } from 'src/redux/api/apiRequestPost';
 
 export default function ProfileUser() {
    const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
@@ -15,7 +16,12 @@ export default function ProfileUser() {
    const {userId} = useParams<{ userId: string }>()
    const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.user_id) as string | undefined;
     const userData = useSelector((state:any)=>state.user.getUserById?.data?.data)
-   
+    const postlistByUserState = useSelector((state:any)=>state.post.getPostValidById?.data)
+   const postlistByUser: any[] = Array.isArray(postlistByUserState?.data)
+  ? postlistByUserState.data
+  : Array.isArray(postlistByUserState?.data)
+  ? postlistByUserState.data
+  : [];
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
@@ -34,12 +40,13 @@ export default function ProfileUser() {
           navigate(`/profile/${userId}`);
       }
  
-  const postsWithMedia = mergeMediaToPosts(poststest);
+  const postsWithMedia = mergeMediaToPosts(postlistByUser);
   console.log("postsWithMedia", postsWithMedia);
   useEffect(()=>{
     if (userId){
       getUserById(userId,dispatch)
-      getFollowsByUserId(userId,dispatch)
+      getFollowsByUserId(userId,dispatch),
+      getPostValidById(userId,dispatch)
     }
   
   },[])
@@ -49,7 +56,14 @@ const followers: any[] = Array.isArray(followersState?.flowers)
   : Array.isArray(followersState?.data)
   ? followersState.data
   : [];
-
+  
+const postsSorted = useMemo(() => {
+  const arr = Array.isArray(postlistByUser) ? postlistByUser : [];
+  return [...arr].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+}, [postlistByUser]);
 console.log("followers", followers.length);
   return (
     <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
@@ -76,7 +90,7 @@ console.log("followers", followers.length);
                     </div>
                     <div className='flex gap-5 text-gray-300 text-sm mt-2'>
                       <span     onClick={() => handleClick(1)} className='cursor-pointer'>{followers.length} Người Theo Dõi</span>
-                      <span onClick={() => handleClick(0)} className='cursor-pointer w-[90px]'>10 post</span>
+                      <span onClick={() => handleClick(0)} className='cursor-pointer w-[90px]'>{postlistByUser.length} post</span>
                     </div>
                     
                </div>
@@ -106,8 +120,8 @@ console.log("followers", followers.length);
               <div className="">
                     {selectedIndex === 0 ? (
                       <div>
-                        {postsWithMedia.map((post) => (
-                                <Post key={post.id} post={post} />
+                        {postsSorted.map((post) => (
+                                <Post key={post._id} post={post} />
                               ))}
                       </div>
                     ) : selectedIndex === 1 ? (

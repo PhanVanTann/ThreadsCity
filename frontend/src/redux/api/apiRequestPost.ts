@@ -1,4 +1,13 @@
-import { getListPostFailure, getListPostStart, getListPostSuccess,createPostFailure,createPostStart,createPostSuccess } from "../slice/postSlice"
+import { getListPostFailure, 
+    getListPostStart, 
+    getListPostSuccess,
+    createPostFailure,
+    createPostStart,
+    createPostSuccess ,
+    getPostValidByIdFailure,
+    getPostValidByIdStart,
+    getPostValidByIdSuccess
+} from "../slice/postSlice"
 import axiosInstance from "../../axios/axios.interceptor";
 export const getlistPost = async (dispatch:any) => {
     dispatch(getListPostStart())
@@ -35,3 +44,19 @@ export const createPost = async (
     throw err;
   }
 };
+export const getPostValidById = async (user_id:string,dispatch:any) => {
+    dispatch(getPostValidByIdStart())
+    try {
+        const res = await axiosInstance.get(`/post/mypostvalid/`,{
+            params:{
+                user_id
+            }
+        });
+        console.log("posstdata",res.data)
+        dispatch(getPostValidByIdSuccess(res.data));
+    } catch (error) {
+        console.error("failed:", error);
+
+        dispatch(getPostValidByIdFailure())
+    }
+}
