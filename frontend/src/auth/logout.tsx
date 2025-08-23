@@ -13,8 +13,8 @@ export default function Logout() {
         
     }
   return (
-    <div >
-        <button onClick={handleLogout}>ddawn xuao </button>
+    <div onClick={handleLogout}>
+         Đăng xuất
     </div>
   );
 }

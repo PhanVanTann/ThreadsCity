@@ -11,13 +11,21 @@ import {
   registerStart,
   registerSuccess,
 } from "../slice/authSlice";
+import toast from "react-hot-toast";
+
 
 export const loginUser = async (user: any, dispatch: any, navigate: any) => {
   dispatch(loginStart());
   try {
     console.log('user',user)
-    const res = await axiosInstance.post("/auth/login/", user);
-    console.log('datas',res.data)
+    const p =  axiosInstance.post("/auth/login/", user);
+    console.log('datas',p);
+    toast.promise(p, {
+      loading: "Đang đăng nhập...",
+      success: "Đăng nhập thành công!",
+      error: "Đăng nhập thất bại!",
+    });
+    const res = await p;
     dispatch(loginSuccess(res.data));
     navigate("/");
   } catch (err: any) {
@@ -30,7 +38,13 @@ export const loginUser = async (user: any, dispatch: any, navigate: any) => {
 export const logoutUser = async (dispatch: any, navigate: any) => {
   dispatch(logoutStart());
   try {
-    await axiosInstance.post("/auth/logout/");
+    const p=  axiosInstance.post("/auth/logout/");
+     toast.promise(p, {
+      loading: "Đang đăng xuất...",
+      success: "Đăng xuất thành công!",
+      error: "Đăng xuất thất bại!",
+    });
+    await p;
     dispatch(logoutSuccess());
     navigate("/login");
   } catch (err: any) {

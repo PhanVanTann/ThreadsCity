@@ -1,18 +1,28 @@
 'use client';
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { FaThreads,FaPlus,FaRegHeart } from "react-icons/fa6";
 import { RiHome4Line,RiSearch2Line,RiMenu4Fill } from "react-icons/ri";
 import Logout from "../auth/logout";
 import { BsPerson } from "react-icons/bs";
 import { NavLink, useParams } from "react-router";
 import Post from "./postmodel";
+import { useClickOutside } from "../hook/useClickOutside"; 
+
 export default function Sidebar() {
     const [openPost, setOpenPost] = useState(false);
     const [openMenu, setOpenMenu] = useState(false);
+    const btnRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
     // const userId = localStorage.getItem("user_id")  || "";
   const handleOpenmenu = () => {
     setOpenMenu(!openMenu);
   }
+
+    useClickOutside([btnRef, menuRef], () => setOpenMenu(false), {
+    enabled: openMenu,
+    onEscape: () => setOpenMenu(false),
+  });
+  
   return (
     <div className="fixed z-50">
     <div className="flex flex-col  items-center justify-between  h-screen w-[80px] bg-black text-white p-5">
@@ -88,15 +98,15 @@ export default function Sidebar() {
             </NavLink>
         </nav>
         { openMenu && (
-          <div className="absolute bottom-20 left-0 w-[200px] bg-[#262626] text-white rounded-lg shadow-lg">
+          <div  ref={menuRef} className="absolute bottom-20 left-0 w-[200px] bg-[#262626] text-white rounded-lg shadow-lg">
             <ul className="p-2">  
               <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer">Cài đặt</li>
-              <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer}">Trợ giúp</li>          
-              <li className=""><Logout/>  </li>
+              <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer">Trợ giúp</li>          
+              <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer"><Logout/>  </li>
             </ul>
           </div>
         )}
-        <div onClick={handleOpenmenu} className="text-[#4d4d4d] px-3 py-2 mt-4 rounded-lg hover:bg-[#1d1d1d] hover:text-white transition-colors">     
+        <div ref={btnRef}  onClick={handleOpenmenu} className="text-[#4d4d4d] px-3 py-2 mt-4 rounded-lg hover:bg-[#1d1d1d] hover:text-white transition-colors">     
           <RiMenu4Fill size={30} />
         </div>
     </div>
