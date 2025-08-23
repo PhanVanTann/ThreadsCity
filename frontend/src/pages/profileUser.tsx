@@ -83,7 +83,7 @@ console.log("followers", followers.length);
               
                  <button className='border rounded-lg px-3 py-2'>chỉnh sửa</button>
              </div>
-           <div className="flex sticky top-0 bg-black z-70">
+           <div className="flex sticky top-0 bg-black z-30">
                   <div
                     className={`w-1/2 cursor-pointer text-white flex items-center justify-center p-4 border-b ${
                       selectedIndex === 0 ? 'border-b-1 border-white' : 'border-[#3d3d3d]'
