@@ -57,7 +57,7 @@ class MessageService(collection):
             "text": text,
             "media": media_url,
             "status":False,
-            "created_at": datetime.now()
+            "created_at": datetime.utcnow().isoformat() + "Z"
         }
         self.message_collection.insert_one(message_doc)
         return {"success": True, "message": "Message created"}

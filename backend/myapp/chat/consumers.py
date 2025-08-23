@@ -47,6 +47,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'send_id': send_id,
                     'receiver_id': receiver_id,
                     'text': message_text,
+                    
                     'media': None
                 }
             )
@@ -58,4 +59,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'receiver_id': event['receiver_id'],
             'text': event['text'],
             'media': event['media']
+            
         }))

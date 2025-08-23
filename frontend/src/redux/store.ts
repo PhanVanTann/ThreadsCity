@@ -4,6 +4,9 @@ import storage from 'redux-persist/lib/storage'
 import authReducer from './slice/authSlice'
 import friendReducer from './slice/friendSlice'
 import chatReducer from './slice/chatSlice'
+import postReducer from './slice/postSlice'
+import { ImOffice } from 'react-icons/im'
+import usersReducer from './slice/userSlice'
 
 const persistConfig = {
   key: 'auth',
@@ -15,7 +18,9 @@ const persistConfig = {
 const rootReducer = combineReducers({
   auth: authReducer,
   friend: friendReducer,
-  chat:chatReducer
+  chat:chatReducer,
+  post:postReducer,
+  user:usersReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

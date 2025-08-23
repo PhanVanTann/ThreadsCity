@@ -3,21 +3,32 @@ import Post from '../components/post';
 import { mergeMediaToPosts } from '../components/postlist';
 import { poststest,usertest } from '../datatest';
 import { useNavigate } from 'react-router'; 
-
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from 'react';
+import { getUserById } from 'src/redux/api/apiRequestUser';
+import { getFollowsByUserId } from 'src/redux/api/apiRequestFriend';
+import { useParams } from "react-router-dom";
 
 export default function ProfileUser() {
    const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
    const [isFriend, setIsFriend] = useState<boolean>(false);
-   const [userId] = useState("12345");
+   const {userId} = useParams<{ userId: string }>()
+   const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.user_id) as string | undefined;
+    const userData = useSelector((state:any)=>state.user.getUserById?.data?.data)
+   
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
+  if (!userId){
+      navigate(`/`)
+   }
      const handleClick = (index: number) => {
     setSelectedIndex(index);
   };
   
 
   const handleFriendshipToggle = () => {
-    setIsFriend((prev) => !prev); // Đảo ngược trạng thái kết bạn
+    setIsFriend((prev) => !prev); 
   };
     const handleClickUser = (userId: string) => {
           navigate(`/profile/${userId}`);
@@ -25,20 +36,35 @@ export default function ProfileUser() {
  
   const postsWithMedia = mergeMediaToPosts(poststest);
   console.log("postsWithMedia", postsWithMedia);
+  useEffect(()=>{
+    if (userId){
+      getUserById(userId,dispatch)
+      getFollowsByUserId(userId,dispatch)
+    }
+  
+  },[])
+   const followersState = useSelector((s:any)=> s.friend.getFollowsByUserId?.data);
+const followers: any[] = Array.isArray(followersState?.flowers)
+  ? followersState.flowers
+  : Array.isArray(followersState?.data)
+  ? followersState.data
+  : [];
+
+console.log("followers", followers.length);
   return (
     <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
         <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-8">
                <img
-                 src={ "https://i.pravatar.cc/150?img=1"} // Replace with actual avatar path
+                 src={userData?.avatar|| "https://i.pravatar.cc/150?img=1"} // Replace with actual avatar path
                  alt="avatar"
                  className="object-cover rounded-full w-[100px] h-[100px] "
                />
                <div className='w-[300px] flex flex-col items-start justify-center'>
                     <div className=" flex gap-5 ">
                       <span className="text-white text-xl font-bold ">
-                        User name  
+                        {`${userData?.last_name} ${userData?.first_name} `}
                       </span>
-                      {/* {userId !== currentUserId && ( */}
+                      {userId !== currentUserId && (
                        <button
                             onClick={handleFriendshipToggle}
                               className={`px-2 py-1 rounded-lg ${
@@ -46,10 +72,10 @@ export default function ProfileUser() {
                                               } `}                          >
                             {isFriend ? 'Hủy kết bạn' : 'Kết bạn'}
                     </button>
-                     {/* )} */}
+                     )} 
                     </div>
                     <div className='flex gap-5 text-gray-300 text-sm mt-2'>
-                      <span     onClick={() => handleClick(1)} className='cursor-pointer'>21 người theo dõi</span>
+                      <span     onClick={() => handleClick(1)} className='cursor-pointer'>{followers.length} Người Theo Dõi</span>
                       <span onClick={() => handleClick(0)} className='cursor-pointer w-[90px]'>10 post</span>
                     </div>
                     

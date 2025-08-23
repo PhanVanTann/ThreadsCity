@@ -60,7 +60,7 @@ class FriendService(collection):
             user_data = self.user_collection.find_one({'_id':ObjectId(user_id)})
             if not user_data:
                 return {"success":False,"message":"user khoong tồn tại"}
-            flowers = self.friend_colleciton.find({"follower_id":user_id}) 
+            flowers = self.friend_collection.find({"follower_id":user_id}) 
             flowers_list = list(flowers) 
             print("flowers",flowers)
             if not flowers_list:
@@ -114,7 +114,7 @@ class FriendService(collection):
             mutual_ids = list(followees & followers)
 
             if not mutual_ids:
-                return {"success": True, "data": "bạn chưa có bạn bè"}
+                return {"success": True, "data": []}
 
           
             users_cursor = self.user_collection.find(
@@ -134,3 +134,6 @@ class FriendService(collection):
             return {"success": True, "data": friends}
         except Exception as e:
             return {"success": False, "message": str(e)}
+        
+   
+
