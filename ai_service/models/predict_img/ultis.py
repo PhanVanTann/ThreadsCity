@@ -10,7 +10,7 @@ import tempfile
 def predict_image(image_path, model, name_model, postid):
     results = model(image_path)
     best_detection = None
-    results[0].show()
+ 
 
     for r in results:
         img_with_boxes = r.plot()
