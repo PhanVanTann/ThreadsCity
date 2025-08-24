@@ -7,17 +7,18 @@ import { useAuth, useRoomId, useFriends } from "./hooks";
 import type { ObjectId, MessageDoc } from "./types";
 import ChatWindow from "./ChatWindow";
 import ConversationList from "./ConversationList";
+import { useClickOutside } from "src/hook/useClickOutside";
 
 export default function MessageWidget() {
    const { user } = useAuth();
     const room_id = useRoomId();                     // <- hook của bạn
     const currentUserId = user as ObjectId | undefined;
     const friends = useFriends(currentUserId);
-  
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<MessageDoc[]>([]);
     const [activeOther, setActiveOther] = useState<ObjectId | null>(null);
-  
+    const btnRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
     const dispatch = useDispatch();
     const wsRef = useRef<ReturnType<typeof connectChatWS> | null>(null);
   
@@ -151,6 +152,11 @@ export default function MessageWidget() {
   
     const otherUser =
       activeOther && (friends.find((f) => f._id === activeOther) || { _id: activeOther, name: activeOther });
+   
+    useClickOutside([btnRef, menuRef], () =>setIsOpen((s) => !s), {
+    enabled: isOpen,
+    onEscape: () => setIsOpen((s) => !s),
+  });
   
     return (
       <div className="relative">
@@ -163,7 +169,7 @@ export default function MessageWidget() {
         </div>
   
         {isOpen && (
-          <div className="fixed bottom-20 right-5 w-[330px] h-[500px] bg-white dark:bg-[#181818] shadow-2xl rounded-xl overflow-hidden border border-gray-200 dark:border-[#2c2c2c]">
+          <div ref={menuRef} className="fixed bottom-20 right-5 w-[330px] h-[500px] bg-white dark:bg-[#181818] shadow-2xl rounded-xl overflow-hidden border border-gray-200 dark:border-[#2c2c2c]">
             <div className="h-full flex flex-col">
               <div className="shrink-0 p-3 font-semibold text-sm border-b border-gray-200 dark:border-[#2c2c2c]">
                 Messages

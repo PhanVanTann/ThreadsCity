@@ -68,7 +68,7 @@ export default function Postmodel({ open, onClose }: Props) {
       toast.error("Đăng bài thất bại!");
     }
   }, [createOk, createFail, onClose]);
-
+ 
   // click outside/Escape
   useClickOutside([menuRef], requestClose, {
     enabled: open && !confirmOpen,
@@ -197,8 +197,8 @@ export default function Postmodel({ open, onClose }: Props) {
                         v.src = url;
                         await new Promise<void>((r) => {
                           v.onloadedmetadata = () => {
-                            if (v.duration <= 30) valid.push(f);
-                            else toast.error("Video tối đa 30 giây!");
+                            if (v.duration <= 20) valid.push(f);
+                            else toast.error("Video tối đa 20 giây!");
                             URL.revokeObjectURL(url);
                             r();
                           };

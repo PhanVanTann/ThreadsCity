@@ -21,6 +21,7 @@ from users import urls as user_urls
 from post import urls as post_urls
 from chat import urls as chat_urls
 from friend import urls as friend_urls
+from comments import urls as comment_urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include(auth_urls.urlpatterns)), 
@@ -28,4 +29,5 @@ urlpatterns = [
     path('post/', include(post_urls.urlpatterns)),
     path('chat/',include(chat_urls.urlpatterns)),
     path('friend/',include(friend_urls.urlpatterns)),
+    path('comment/',include(comment_urls.urlpatterns)),
 ]

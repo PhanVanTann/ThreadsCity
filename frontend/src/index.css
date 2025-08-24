@@ -11,3 +11,9 @@ body {
   color: #fff;
   background-color: #000;
 }
+.scroll-dark::-webkit-scrollbar { width: 12px; height: 12px; }
+.scroll-dark::-webkit-scrollbar-thumb { background: #9f9f9f; border-radius: 9999px; }
+.scroll-dark::-webkit-scrollbar-track { background: transparent; }
+
+/* Firefox */
+.scroll-dark { scrollbar-width: fat; scrollbar-color: #9f9f9f transparent; }
