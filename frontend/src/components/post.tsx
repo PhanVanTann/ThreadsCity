@@ -34,11 +34,12 @@ export default function Post({ post }: { post: Post }) {
   const navigate = useNavigate()
   const [openComment, setOpenComment] = useState(false);
   const dispatch = useDispatch();
+  const [onClickMore,setOnClickMore] = useState(false);
   const [fetched, setFetched] = useState(false);
   const commentsState = useSelector(
     (s: any) => s.comment.byPost?.[post._id]
   ) || { data: null, isFetching: false, error: false, success: false };
-
+  const myPost = useSelector((s:any)=>s.auth.login.currentUser?.user_id===post.user_id)
   const { data, isFetching, error, success } = commentsState;
   const comments: any[] = data?.data ?? [];
   const currentUserId = useSelector((s:any) => s.auth.login.currentUser?.user_id) as string | undefined;
@@ -113,11 +114,32 @@ useEffect(() => {
           <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
         </div>
         {currentUserId==post.user_id&&(
-          <div className="p-2 text-white cursor-pointer">
+          <div onClick={()=>setOnClickMore(!onClickMore)} className="p-2 text-white cursor-pointer">
                   <AiOutlineMore size={20} />
-                </div>
+            </div>
         )}
-     
+        {(onClickMore && myPost ) &&(
+          <div className='absolute top-10 right-4 bg-gray-700 text-white rounded-lg shadow-lg z-10'>
+            <button 
+              className='block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-t-lg'
+              onClick={()=>{
+                // Xử lý sửa bài viết
+                setOnClickMore(false)
+              }}
+            >
+              Sửa bài viết
+            </button>
+            <button 
+              className='block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-b-lg'
+              onClick={()=>{
+                // Xử lý xóa bài viết
+                setOnClickMore(false)
+              }}
+            >
+              Xóa bài viết
+            </button>
+          </div>
+        )}
       </div>
       {/* content */}
       <div className="w-full flex flex-col gap-3">
@@ -256,7 +278,7 @@ useEffect(() => {
 
   </div>
 )}
-
+    
 
     </div>
   );

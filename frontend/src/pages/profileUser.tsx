@@ -9,19 +9,24 @@ import { getUserById } from 'src/redux/api/apiRequestUser';
 import { getFollowsByUserId,createFollowUser ,getFollowerByUserId,isFriendUser} from 'src/redux/api/apiRequestFriend';
 import { useParams,useNavigate } from "react-router-dom";
 import { getPostValidById } from 'src/redux/api/apiRequestPost';
+import ProfileEditModal from 'src/components/ProfileEditModal';
+import { ProfileSkeleton } from 'src/components/ProfileSkeleton';
 
 export default function ProfileUser() {
    const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
    const isFriend = useSelector((state:any)=>state.friend.isFriendUser?.data?.is_friend)
    const {userId} = useParams<{ userId: string }>()
+    const [openEdit, setOpenEdit] = useState(false);
    const currentUserId = useSelector((state: any) => state.auth.login.currentUser?.user_id) as string | undefined;
     const userData = useSelector((state:any)=>state.user.getUserById?.data?.data)
     const postlistByUserState = useSelector((state:any)=>state.post.getPostValidById?.data)
+     const updating = useSelector((s:any) => s.user.update?.isFetching) || false;
+   const [showSkeleton, setShowSkeleton] = useState(true);
    const postlistByUser: any[] = Array.isArray(postlistByUserState?.data)
   ? postlistByUserState.data
   : Array.isArray(postlistByUserState?.data)
   ? postlistByUserState.data
-  : [];
+  : []; 
 
   const navigate = useNavigate();
   const dispatch = useDispatch()
@@ -33,7 +38,20 @@ export default function ProfileUser() {
     setSelectedIndex(index);
   };
 
-  
+   const initialProfile = {
+    first_name: userData?.first_name,
+    last_name: userData?.last_name,
+    avatar: userData?.avatar, // url
+    bio: userData?.bio,
+  };
+  useEffect(() => {
+  // Sau 2 giây thì tắt skeleton
+  const timer = setTimeout(() => {
+    setShowSkeleton(false);
+  }, 1500);
+
+  return () => clearTimeout(timer); // clear khi unmount
+}, []);
     const handleClickUser = (userId: string) => {
           navigate(`/profile/${userId}`);
       }
@@ -43,7 +61,6 @@ export default function ProfileUser() {
         'followee_id':followee_id
       }
       await createFollowUser(data,dispatch)
-      
       await getFollowerByUserId({"user_id":userId,"my_id":currentUserId,"follower":true},dispatch)
       await getFollowsByUserId(userId as string,currentUserId as string, dispatch);
       await isFriendUser({"user_id":currentUserId,"follower_id":followee_id},dispatch)
@@ -60,16 +77,16 @@ export default function ProfileUser() {
               isFriendUser({"user_id":currentUserId,"follower_id":userId},dispatch)
           }
     }
-
     
-
   },[userId,dispatch])
+
   const followersState = useSelector((s:any)=> s.friend.getFollowsByUserId?.data);
   const followers: any[] = Array.isArray(followersState?.flowers)
   ? followersState.flowers
   : Array.isArray(followersState?.data)
   ? followersState.data
   : [];
+
   const followerState = useSelector((s:any)=> s.friend.getFollowerByUserId?.data);
   console.log(followerState)
   const follower: any[] = Array.isArray(followerState?.flowers)
@@ -89,9 +106,20 @@ const postsSorted = useMemo(() => {
 console.log("followers", followers.length);
 
 
-
+  const handleSubmitEdit = async (fd: FormData) => {
+    // if (!currentUserId) return;
+    // await updateUserProfile(currentUserId, fd, dispatch);
+    // setOpenEdit(false);
+    // // Nếu muốn refresh lại info:
+    // // await getUserById(currentUserId, dispatch);
+  };
   return (
-    <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
+   
+     <div>
+    {showSkeleton ? (
+      <ProfileSkeleton />
+    ) : (
+       <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
         <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-8">
                <img
                  src={userData?.avatar|| "https://i.pravatar.cc/150?img=1"} // Replace with actual avatar path
@@ -142,7 +170,14 @@ console.log("followers", followers.length);
                     
                </div>
               {userId === currentUserId ? (
-                  <button className="border rounded-lg px-3 py-2">chỉnh sửa</button>
+                  <button className="border rounded-lg px-3 py-2" onClick={() => setOpenEdit(true)}>chỉnh sửa 
+                  <ProfileEditModal
+                        open={openEdit}
+                        onClose={() => setOpenEdit(false)}
+                        initial={initialProfile}
+                        onSubmit={handleSubmitEdit}
+                        loading={updating}
+                      /></button>
                 ) : (
                   <div className="border rounded-lg px-3 py-2 invisible">placeholder</div>
                 )}
@@ -240,7 +275,10 @@ console.log("followers", followers.length);
                     (
                       <div className="text-gray-300">Chọn một tab để xem nội dung</div>
                     )}
+                    
                   </div>
     </div>
+    )}
+  </div>
   );
 }

@@ -4,7 +4,7 @@ import { FaThreads,FaPlus,FaRegHeart } from "react-icons/fa6";
 import { RiHome4Line,RiSearch2Line,RiMenu4Fill } from "react-icons/ri";
 import Logout from "../auth/logout";
 import { BsPerson } from "react-icons/bs";
-import { NavLink, useParams } from "react-router";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Post from "./postmodel";
 import { useClickOutside } from "../hook/useClickOutside"; 
@@ -12,6 +12,7 @@ import { useClickOutside } from "../hook/useClickOutside";
 export default function Sidebar() {
     const [openPost, setOpenPost] = useState(false);
     const [openMenu, setOpenMenu] = useState(false);
+    const navigate = useNavigate();
     const btnRef = useRef<HTMLButtonElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const userId = useSelector((state: any) => state.auth.login.currentUser?.user_id)
@@ -30,6 +31,12 @@ export default function Sidebar() {
     <div className="flex flex-col  items-center justify-between  h-screen w-[80px] bg-black text-white p-5">
       <div className="">
           <NavLink to="/" end 
+          onClick={(e) => {
+              if (window.location.pathname === "/") {
+                e.preventDefault();
+                navigate(0); // reload lại route hiện tại
+              }
+            }}
                 >
                 <div className="px-3 py-2  rounded-lg  hover:text-white transition-colors">     
                    <FaThreads  className="transition duration-200 hover:scale-125"  size={40}/>
@@ -41,7 +48,14 @@ export default function Sidebar() {
       </div>      
         <nav className=" p-2">
             {/* home */}
-            <NavLink to="/" end className={({ isActive, isPending, isTransitioning }) =>
+            <NavLink to="/" end 
+            onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  navigate(0); // reload lại route hiện tại
+                }
+              }}
+            className={({ isActive, isPending, isTransitioning }) =>
                     [
                       isPending ? "pending" : "",
                       isActive ? "active" : "noactive",
@@ -56,7 +70,14 @@ export default function Sidebar() {
               
             </NavLink>
             {/* search */}
-            <NavLink to="/search"end className={({ isActive, isPending, isTransitioning }) =>
+            <NavLink to="/search"end 
+            onClick={(e) => {
+                      if (window.location.pathname === "/search") {
+                        e.preventDefault();
+                        navigate(0); // reload lại route hiện tại
+                      }
+                    }}
+            className={({ isActive, isPending, isTransitioning }) =>
                     [
                       isPending ? "pending" : "",
                       isActive ? "active" : "noactive",
@@ -75,7 +96,14 @@ export default function Sidebar() {
             </div>
             
             {/* notification */}
-            <NavLink to="/notifications"end className={({ isActive, isPending, isTransitioning }) =>
+            <NavLink to="/notifications"end 
+             onClick={(e) => {
+                      if (window.location.pathname === "/notifications") {
+                        e.preventDefault();
+                        navigate(0); // reload lại route hiện tại
+                      }
+                    }}
+            className={({ isActive, isPending, isTransitioning }) =>
                     [
                       isPending ? "pending" : "",
                       isActive ? "active" : "noactive",
@@ -87,7 +115,14 @@ export default function Sidebar() {
                </div>
             </NavLink>
             {/* profile */}
-               <NavLink to={`/profile/${userId}`} end className={({ isActive, isPending, isTransitioning }) =>
+               <NavLink to={`/profile/${userId}`} end 
+               onClick={(e) => {
+                      if (window.location.pathname === `/profile/${userId}`) {
+                        e.preventDefault();
+                        navigate(0); // reload lại route hiện tại
+                      }
+                    }}
+               className={({ isActive, isPending, isTransitioning }) =>
                     [
                       isPending ? "pending" : "",
                       isActive ? "active" : "noactive",
