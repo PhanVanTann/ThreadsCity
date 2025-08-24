@@ -4,10 +4,10 @@ from datetime import datetime
 
 class collection:
     def __init__(self):
-        self.friend_collectiton = mongo.get_collection('friend')
+        self.friend_collection = mongo.get_collection('friend')
         self.user_collection = mongo.get_collection('users')
     def get_friend_collection(self):
-        return self.friend_collectiton
+        return self.friend_collection
     def get_user_collection(self): 
         return self.user_collection
 
@@ -55,39 +55,62 @@ class FriendService(collection):
                 }
         except Exception as e:
             return{"success":False,"message":str(e)}
-    def get_flowersbyuserid(self,user_id):
+    def get_flowersbyuserid(self, user_id,my_id ,follower):
         try:
-            user_data = self.user_collection.find_one({'_id':ObjectId(user_id)})
+           
+            print("user_id",user_id)
+            print("my_id",my_id)
+            user_data = self.user_collection.find_one({'_id': ObjectId(user_id)})
             if not user_data:
-                return {"success":False,"message":"user khoong tồn tại"}
-            flowers = self.friend_collection.find({"follower_id":user_id}) 
-            flowers_list = list(flowers) 
-            print("flowers",flowers)
-            if not flowers_list:
-                return {"success":True,"message":"bạn chưa có bạn bè nào","flowers":None}
-            flowers_id = [item['followee_id'] for item in flowers_list ]
-            print("flowers_id",flowers_id)
-            
+                return {"success": False, "message": "user không tồn tại"}
+
+            if not follower:  
+                flowers = list(self.friend_collection.find({"follower_id": user_id}))
+                if not flowers:
+                    return {"success": True, "message": "bạn chưa theo dõi ngừoi nào", "flowers": None}
+                flowers_id = [item['followee_id'] for item in flowers]
+            else: 
+                flowers = list(self.friend_collection.find({"followee_id": user_id}))
+                if not flowers:
+                    return {"success": True, "message": "bạn chưa có người theo dõi nào", "flowers": None}
+                flowers_id = [item['follower_id'] for item in flowers]
+
+        
             flowers_infor = list(
                 self.user_collection.find(
                     {"_id": {"$in": [ObjectId(fid) for fid in flowers_id]}},
-                    {"first_name": 1,"last_name":1, "avatar": 1}
+                    {"first_name": 1, "last_name": 1, "avatar": 1}
                 )
             )
+
             flowers_data = []
             for u in flowers_infor:
-                flowers_data.append({
-                    "id":str(u['_id']),
-                    "first_name":u['first_name'],
-                    "last_name":u['last_name'],
-                    "avatar":u['avatar']
-
+                other_id = str(u["_id"])
+                me_follow = self.friend_collection.find_one({
+                    "follower_id": my_id,
+                    "followee_id": other_id
                 })
-            
-            return {"success":True,"flowers":flowers_data}
+                other_follow = self.friend_collection.find_one({
+                    "follower_id": other_id,
+                    "followee_id": my_id
+                })
+               
+                if  me_follow and  other_follow:
+                    result = True
+                else :
+                    result = False
+                print(result,"shshhs")
+                flowers_data.append({
+                    "id": other_id,
+                    "first_name": u["first_name"],
+                    "last_name": u["last_name"],
+                    "avatar": u["avatar"],
+                    "is_friend": result
+                })
+
+            return {"success": True, "flowers": flowers_data}
         except Exception as e:
-            return{"success":False,"message":str(e)}
-    
+            return {"success": False, "message": str(e)}
     def getlistfriend(self, user_id: str):
         """
         Danh sách bạn bè (mutual follow):
@@ -96,21 +119,21 @@ class FriendService(collection):
         - friends = giao (mutual) followees ∩ followers
         """
         try:
-            # 1) Lấy những người mình đang follow
+          
             followees_cursor = self.friend_collection.find(
                 {'follower_id': user_id},
                 {'_id': 0, 'followee_id': 1}
             )
             followees = {doc['followee_id'] for doc in followees_cursor}
 
-            # 2) Lấy những người đang follow mình
+         
             followers_cursor = self.friend_collection.find(
                 {'followee_id': user_id},
                 {'_id': 0, 'follower_id': 1}
             )
             followers = {doc['follower_id'] for doc in followers_cursor}
 
-            # 3) Mutual = giao nhau
+     
             mutual_ids = list(followees & followers)
 
             if not mutual_ids:
@@ -134,6 +157,51 @@ class FriendService(collection):
             return {"success": True, "data": friends}
         except Exception as e:
             return {"success": False, "message": str(e)}
+    
+    def isFriend(self, user_id, follower_id):
+        try:
+            user = self.user_collection.find_one({
+                 "$or": [
+                    {"_id": ObjectId(user_id)},
+                    {"_id": ObjectId(follower_id)},
+                ]
+            })
+            if not user:
+                return {"success":False,"message":"not user"}
+            me_follow = self.friend_collection.find_one({
+                    "follower_id": user_id,
+                    "followee_id": follower_id
+                })
+            other_follow = self.friend_collection.find_one({
+                    "follower_id": follower_id,
+                    "followee_id": user_id
+                })
+            print("me_follow",me_follow)
+            print("other_follow",other_follow)
+            if  me_follow and other_follow:
+                result = "friend"
+            elif me_follow and not other_follow:
+                result = "follower"
+            elif other_follow and not me_follow:
+                result = "following"
+            else :
+                result ="nofollow"
+            if result:
+                return {
+                    "success": True,
+                    "is_friend": result,
+                  
+                }
+            return{
+                "success": False,
+                "error":"không có trường hợp này"
+               
+            }
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+                
+            
+    
         
    
 

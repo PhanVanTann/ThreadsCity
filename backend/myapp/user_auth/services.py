@@ -127,7 +127,7 @@ class GoogoleService(collection):
         self.user_collection = self.get_user_collection()
 
     def create_user(self, idtoken_str):
-        try:
+        try: 
             idinfo = id_token.verify_oauth2_token(idtoken_str, requests.Request(),settings.GOOGLE_CLIENT_ID),
             email = idinfo.get("email")
             first_name = idinfo.get("family_name")

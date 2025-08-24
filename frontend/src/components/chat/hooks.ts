@@ -28,7 +28,7 @@ export const useFriends = (user_id?: ObjectId) => {
     setFriends(
       raw.map((f: any) => ({
         _id: f.id,
-        name: [f.first_name, f.last_name].filter(Boolean).join(" ").trim() || f.id,
+        name: [f.last_name, f.first_name].filter(Boolean).join(" ").trim() || f.id,
         avatar: f.avatar ?? null,
       }))
     );
