@@ -68,17 +68,24 @@ export const registerUser = async (user: any, dispatch: any, navigate: any) => {
 };
 
 export const loginByGoogle = async (
-  access_token: string,
+  idtoken: string,
   dispatch: any,
   navigate: any
 ) => {
   dispatch(loginStart());
   try {
-    const res = await axiosInstance.post("/auth/googleLogin/", {
-      access_token,
+    
+    const res = axiosInstance.post("/auth/googleLogin/", {
+      idtoken,
     });
-    dispatch(loginSuccess(res.data));
-    navigate("/home");
+    toast.promise(res, {
+      loading: "Đang đăng nhập...",
+      success: "Đăng nhập thành công!",
+      error: "Đăng nhập thất bại!",
+    });
+    const result = await res
+    dispatch(loginSuccess(result.data));
+    navigate("/");
   } catch (err: any) {
     console.error("Google login failed:", err);
     dispatch(loginFailure());

@@ -6,6 +6,7 @@ import requests
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from google.oauth2 import id_token
+from google.auth.transport import requests as grequests 
 from django.conf import settings
 from utils.jwt import (
     create_access_token,
@@ -128,7 +129,10 @@ class GoogoleService(collection):
 
     def create_user(self, idtoken_str):
         try: 
-            idinfo = id_token.verify_oauth2_token(idtoken_str, requests.Request(),settings.GOOGLE_CLIENT_ID),
+            print(settings.GOOGLE_CLIENT_ID)
+            print(idtoken_str)
+            idinfo = id_token.verify_oauth2_token(idtoken_str, grequests.Request(),settings.GOOGLE_CLIENT_ID)
+            print(idinfo)
             email = idinfo.get("email")
             first_name = idinfo.get("family_name")
             last_name = idinfo.get("given_name")

@@ -5,7 +5,8 @@ import { FaRegComment } from 'react-icons/fa';
 import { formatTimeAgo } from '../utils/formatIimeAgo.ts';
 import HeartButton from './heart';
 import CommentList from './commentList';
-
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
 
 type Post = {
   _id: string;
@@ -20,29 +21,37 @@ type Post = {
   total_comment: number;
   created_at: string;
   status: string;
+  media:[]
 };
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
 
 export default function Post({ post }: { post: Post }) {
+  const navigate = useNavigate()
   const [openComment, setOpenComment] = useState(false);
+    const currentUserId = useSelector(
+    (s: any) => s.auth.login.currentUser?.user_id
+  ) as string | undefined;
   // chịu trường hợp BE lỡ trả media là mảng: lấy phần tử đầu
   const mediaUrl = useMemo(() => {
     const raw = post.media as unknown;
     if (Array.isArray(raw)) return raw.find(Boolean) ?? '';
     return post.media ?? '';
   }, [post.media]);
-
+  console.log(currentUserId,"llllll")
   const isVideo = mediaUrl ? isVideoUrl(mediaUrl) : false;
-
+  const handleClickProfileUser = (user_id:string)=>{
+      navigate(`profile/${user_id}`)
+  }
   return (
     <div className="w-[700px] flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
-      <div className="flex w-full items-center">
+      <div className="flex w-full items-center " >
         <img
           src={post.avatar || 'https://i.pravatar.cc/150?img=1'}
+          onClick={()=>{handleClickProfileUser(post.user_id)}}
           alt="avatar"
-          className="object-cover rounded-full w-[40px] h-[40px] mr-2"
+          className="object-cover rounded-full w-[40px] h-[40px] mr-2 cursor-pointer"
         />
         <div className="flex-grow flex items-center">
           <span className="text-white font-bold mr-2">
@@ -50,9 +59,12 @@ export default function Post({ post }: { post: Post }) {
           </span>
           <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
         </div>
-        <div className="p-2 text-white cursor-pointer">
-          <AiOutlineMore size={20} />
-        </div>
+        {currentUserId==post.user_id&&(
+          <div className="p-2 text-white cursor-pointer">
+                  <AiOutlineMore size={20} />
+                </div>
+        )}
+     
       </div>
 
       {/* Caption */}

@@ -160,13 +160,14 @@ class FriendService(collection):
     
     def isFriend(self, user_id, follower_id):
         try:
-            user = self.user_collection.find_one({
-                 "$or": [
-                    {"_id": ObjectId(user_id)},
-                    {"_id": ObjectId(follower_id)},
-                ]
-            })
-            if not user:
+            user = self.user_collection.find_one(              
+                    {"_id": ObjectId(user_id)},                   
+            )
+            follower = self.user_collection.find_one(              
+                    {"_id": ObjectId(follower_id)}                
+            )
+            print(user,follower)
+            if not user and not follower:               
                 return {"success":False,"message":"not user"}
             me_follow = self.friend_collection.find_one({
                     "follower_id": user_id,
@@ -176,8 +177,6 @@ class FriendService(collection):
                     "follower_id": follower_id,
                     "followee_id": user_id
                 })
-            print("me_follow",me_follow)
-            print("other_follow",other_follow)
             if  me_follow and other_follow:
                 result = "friend"
             elif me_follow and not other_follow:

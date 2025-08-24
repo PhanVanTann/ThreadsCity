@@ -8,28 +8,25 @@ import Content from './components/Content'
 import Success from './components/Success'
 import toast from 'react-hot-toast'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
-const LoadingPost = (prop:any) => {
-  let loading = prop.loading
+const LoadingPost = () => {
+  const loading = useSelector((state: any) => state.post.createPost.isFetching)
+  const success = useSelector((state: any) => state.post.createPost.success)
   const navigate = useNavigate()
- useEffect(() => {
-    if (loading) {
-      const interval = setInterval(() => {
-        toast.success('tự động chuyển hướng sau 3s')
-
-      }, 3000)
-   
-    navigate('/')
-      return () => clearInterval(interval)
+  useEffect(() => {
+    if (success) {
+      toast.success('Đăng bài thành công!')
     }
-  }, [loading])
+  }, [success, loading])
+
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
       {/* Spinner xoay tròn */}
       <Spinner loading={loading} />
       {/* Thông báo */}
       <HeaderNoti />
-    
+
       <div className='flex flex-row items-start gap-2 mt-7 w-[500px] bg-gray-900 rounded-lg p-5'>
         <Info size={40} />
         <div className='flex flex-col '>
@@ -40,7 +37,7 @@ const LoadingPost = (prop:any) => {
           </p>
         </div>
       </div>
-      {!loading && <Success />}
+      {!loading && success && <Success />}
     </div>
   )
 }

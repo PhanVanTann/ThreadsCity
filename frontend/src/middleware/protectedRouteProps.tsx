@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 // import { getUser } from "../redux/api_request/user_api";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-hot-toast";
 // import LoadingScreen from "../components/LoadingScreen";
 
 interface ProtectedRouteProps {
@@ -10,20 +11,18 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   const user = useSelector((state: any) => state.auth.login.currentUser);
-  console.log("User from App:", user);
-  const userRole = user?.user_role;
-  const isVerified = user?.isVerified;
-  const phoneNumber = user?.phoneNumber;
+  const userRole = user?.role;
+ 
+
 
   console.log("User role:", userRole);
-  console.log("User isVerified:", isVerified);
-  console.log("User phoneNumber:", phoneNumber);
-  if (!isVerified && userRole !== "admin") {
-    return <Navigate to={`/register/otp/${phoneNumber}`} replace />;
+ if(!userRole) {
+    toast.error('Bạn vui lòng đăng nhập!')
+    return <Navigate to="/login" replace />;
   }
-
   if (!allowedRoles.includes(userRole !== null ? userRole : "")) {
-    return <Navigate to="/unauthorized" replace />;
+    toast.error('Bạn không có quyền truy cập!')
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;

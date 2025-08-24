@@ -97,7 +97,7 @@ export default function Login() {
                   {/* <FaGoogle color="#fff" size={20} />
                   <span>Đăng nhập với Google</span> */}
                    <GoogleLogin
-                        onSuccess={async (cred) => {
+                        onSuccess={async (cred) => {  
                           const idToken = cred.credential;             // <-- ID token
                           // (optional) xem nhanh payload
                           console.log("idToken", idToken);

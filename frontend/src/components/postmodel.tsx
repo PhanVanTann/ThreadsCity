@@ -5,24 +5,23 @@ import toast from "react-hot-toast";
 import { FaImages } from "react-icons/fa6";
 import { FaRegSmile } from "react-icons/fa";
 import { useClickOutside } from "src/hook/useClickOutside";
-import { createPost } from "src/redux/api/apiRequestPost";
+import { createPost,getlistPost } from "src/redux/api/apiRequestPost";
 import { getUserById } from "src/redux/api/apiRequestUser";
 import LoadingPost from "src/pages/loadingPost/LoadingPost";
 import EmojiPopup from "./emojipick";
 
+import { Navigate, useNavigate } from 'react-router-dom'
 type Props = { open: boolean; onClose: () => void };
 
 export default function Postmodel({ open, onClose }: Props) {
   const dispatch = useDispatch();
-
+const navigate = useNavigate()
   const userData = useSelector((s: any) => s.user.getUserById?.data?.data || {});
   const currentUserId = useSelector(
     (s: any) => s.auth.login.currentUser?.user_id
   ) as string | undefined;
 
-  const isLoading  = useSelector((s: any) => s.post.createPost?.isFetching);
-  const createOk   = useSelector((s: any) => s.post.createPost?.success);
-  const createFail = useSelector((s: any) => s.post.createPost?.error);
+
 
   const [files, setFiles] = useState<File[]>([]);
   const [showPicker, setShowPicker] = useState(false);
@@ -57,17 +56,7 @@ export default function Postmodel({ open, onClose }: Props) {
     if (currentUserId) getUserById(currentUserId, dispatch);
   }, [currentUserId, dispatch]);
 
-  // phản hồi tạo bài
-  useEffect(() => {
-    if (createOk) {
-      toast.success("Đăng bài thành công!");
-      setContent("");
-      setFiles([]);
-      onClose();
-    } else if (createFail) {
-      toast.error("Đăng bài thất bại!");
-    }
-  }, [createOk, createFail, onClose]);
+ 
 
   // click outside/Escape
   useClickOutside([menuRef], requestClose, {
@@ -86,24 +75,16 @@ export default function Postmodel({ open, onClose }: Props) {
     }
 
     // Nếu BE nhận 1 file:
-    await createPost(
+    createPost(
       { user_id: currentUserId, text: content, file: files[0] },
-      dispatch
+      dispatch,navigate
     );
-
-    // Nếu BE nhận FormData, dùng:
-    // const fd = new FormData();
-    // fd.append("user_id", currentUserId);
-    // fd.append("text", content);
-    // if (files[0]) fd.append("file", files[0]);
-    // await createPost(fd, dispatch);
+    navigate('/loadingpost')
   }
 
   return (
-    <>
-      {isLoading ? (
-        <LoadingPost loading={isLoading} />
-      ) : (
+   
+     
         <div
           className="fixed inset-0 bg-black/30 flex items-center justify-center z-[100]"
           onMouseDown={(e) => {
@@ -273,7 +254,7 @@ export default function Postmodel({ open, onClose }: Props) {
             </div>
           )}
         </div>
-      )}
-    </>
+    
+
   );
 }

@@ -19,6 +19,7 @@ function App() {
     <Suspense fallback={<Loading />}>
       
       <Routes>
+         <Route element={<ProtectedRoute allowedRoles={['user','admin']}/>} >
         <Route element={<DefaultLayout />}>
           <Route path='/' element={<Home />} />
           <Route path='/profile' element={<Navigate to="/" replace/>} />
@@ -27,20 +28,20 @@ function App() {
           <Route path='/notifications' element={<Notifications />} />
           <Route path='/loadingpost' element={<LoadingPost />} />
 
-
+          </Route>
         </Route>
         
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
 
-      {/* <Route element={<ProtectedRoute allowedRoles={['user','admin']}/>} > */}
+ <Route element={<ProtectedRoute allowedRoles={['admin']}/>} >
        <Route element={<AdmintLayout />}>
         <Route path='/dashboard' element={<DashBoard />} />
         <Route path='/postprocessing' element={<PostProcessing />} />
 
 
        </Route>
-      {/* </Route> */}
+      </Route>
         {/* <Route path='*' element={<NotFound />} /> */}
       </Routes>
     </Suspense>

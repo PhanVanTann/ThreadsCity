@@ -16,7 +16,7 @@ export default function PostList() {
   const { data, isFetching, error } = useSelector((state: any) => state.post.getListPost);
 
   useEffect(() => {
-    getlistPost(dispatch);  // gọi API 1 lần khi mount
+    getlistPost(dispatch);  
   }, [dispatch]);
     const postsSorted = useMemo(() => {
     const arr = Array.isArray(data?.data) ? data.data : [];

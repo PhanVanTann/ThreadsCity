@@ -9,6 +9,8 @@ import { getListPostFailure,
     getPostValidByIdSuccess
 } from "../slice/postSlice"
 import axiosInstance from "../../axios/axios.interceptor";
+
+
 export const getlistPost = async (dispatch:any) => {
     dispatch(getListPostStart())
     try {
@@ -23,27 +25,29 @@ export const getlistPost = async (dispatch:any) => {
 
 export const createPost = async (
   payload: { user_id: string; text: string; file?: File | null },
-  dispatch: any
+  dispatch: any,
+  navigate: any
 ) => {
-  dispatch(createPostStart());
+  dispatch(createPostStart())
   try {
-    const fd = new FormData();
-    fd.append("user_id", payload.user_id);
-    fd.append("text", payload.text ?? "");         
-    if (payload.file) fd.append("media", payload.file); 
+    const fd = new FormData()
+    fd.append('user_id', payload.user_id)
+    fd.append('text', payload.text ?? '')
+    if (payload.file) fd.append('media', payload.file)
 
-    const res = await axiosInstance.post("/post/", fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    console.log(res,"ressssss")
-    dispatch(createPostSuccess(res.data));
-    return res.data;
+    const res = await axiosInstance.post('/post/', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    console.log(res, 'ressssss')
+    dispatch(createPostSuccess(res.data))
+    
+    return res.data
   } catch (err) {
-    console.error(err);
-    dispatch(createPostFailure());
-    throw err;
+    console.error(err)
+    dispatch(createPostFailure())
+    throw err
   }
-};
+}
 export const getPostValidById = async (user_id:string,dispatch:any) => {
     dispatch(getPostValidByIdStart())
     try {
