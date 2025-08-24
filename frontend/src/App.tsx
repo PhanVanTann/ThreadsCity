@@ -17,7 +17,7 @@ import LoadingPost from './pages/loadingPost/LoadingPost'
 function App() {
   return (
     <Suspense fallback={<Loading />}>
-      <Toaster position="top-center" />
+      
       <Routes>
         <Route element={<DefaultLayout />}>
           <Route path='/' element={<Home />} />

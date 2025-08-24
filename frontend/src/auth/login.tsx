@@ -4,15 +4,16 @@ import { FaGoogle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { NavLink } from "react-router";
 import { useNavigate } from "react-router";
-import { loginUser } from "../redux/api/apiRequestAuth";
+import { loginByGoogle, loginUser } from "../redux/api/apiRequestAuth";
+import { GoogleLogin } from "@react-oauth/google";
 
 // import { useAuth } from "../../context/authContext";
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [form, setForm] = useState({
     email: "",
@@ -82,7 +83,7 @@ export default function Login() {
                           {showPassword ? "Ẩn" : "Hiện"}
                         </button>
                    </div>
-                    {(errors.password ||   !password) && <span className="text-red-500 text-xs">{errors.password}</span>}
+                    {(errors.password ||   !form.password) && <span className="text-red-500 text-xs">{errors.password}</span>}
 
                       <button
                           type="submit"
@@ -93,8 +94,22 @@ export default function Login() {
              </form>
             <div className="flex items-center justify-center mt-4 select-none">
                 <button  type="button" className="flex items-center cursor-pointer gap-2">
-                  <FaGoogle color="#fff" size={20} />
-                  <span>Đăng nhập với Google</span>
+                  {/* <FaGoogle color="#fff" size={20} />
+                  <span>Đăng nhập với Google</span> */}
+                   <GoogleLogin
+                        onSuccess={async (cred) => {
+                          const idToken = cred.credential;             // <-- ID token
+                          // (optional) xem nhanh payload
+                          console.log("idToken", idToken);
+
+                          await loginByGoogle(idToken!,dispatch, navigate);
+                        }}
+                        onError={() => {
+                          // tuỳ chọn
+                          console.log("Google Login Failed");
+                        }}
+                        useOneTap                   // bật One Tap (tuỳ thích)
+                      />
                 </button>
             </div>
              

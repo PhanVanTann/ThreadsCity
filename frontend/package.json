@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
     "@react-router/node": "^7.7.1",
     "@react-router/serve": "^7.7.1",
     "@reduxjs/toolkit": "^2.8.2",
@@ -15,6 +16,7 @@
     "emoji-picker-react": "^4.13.2",
     "framer-motion": "^12.23.12",
     "isbot": "^5.1.27",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.541.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

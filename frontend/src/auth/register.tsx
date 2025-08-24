@@ -44,7 +44,7 @@ export default function Register() {
     const v = validate();
     setErrors(v);
     if (Object.keys(v).length > 0) return;
-
+    registerUser(form, distpach, navigate);
    
   }
 
