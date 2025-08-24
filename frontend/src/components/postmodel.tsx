@@ -11,6 +11,7 @@ import LoadingPost from "src/pages/loadingPost/LoadingPost";
 import EmojiPopup from "./emojipick";
 
 import { Navigate, useNavigate } from 'react-router-dom'
+
 type Props = { open: boolean; onClose: () => void };
 
 export default function Postmodel({ open, onClose }: Props) {
@@ -26,7 +27,7 @@ const navigate = useNavigate()
   const [files, setFiles] = useState<File[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [content, setContent] = useState("");
-
+  const [submitting, setSubmitting] = useState(false); // <-- NEW
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   // form "bẩn"?
@@ -36,6 +37,7 @@ const navigate = useNavigate()
   const [confirmOpen, setConfirmOpen] = useState(false);
   const requestClose = () => (isDirty ? setConfirmOpen(true) : onClose());
   const cancelClose  = () => setConfirmOpen(false);
+  
   const confirmDiscard = () => {
     setConfirmOpen(false);
     setContent("");
@@ -74,22 +76,35 @@ const navigate = useNavigate()
     onEscape: requestClose,
   });
 
-  if (!open) return null;
 
-  async function handleSubmit(e: React.FormEvent) {
+
+ async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!currentUserId) return;
     if (!content.trim() && files.length === 0) {
       toast.error("Vui lòng nhập nội dung hoặc chọn media");
       return;
     }
-    createPost(
-      { user_id: currentUserId, text: content, file: files[0] },
-      dispatch,navigate
-    );
-    navigate('/loadingpost')
-  }
 
+    setSubmitting(true);            // <-- NEW
+    onClose();                      // <-- ĐÓNG MODAL NGAY LẬP TỨC
+
+    try {
+      await createPost(
+        { user_id: currentUserId, text: content, file: files[0] },
+        dispatch,
+        navigate
+      );
+      navigate('/loadingpost');     // như bạn đang làm
+      // (optional) toast.success("Đăng bài thành công!");
+ 
+    } finally {
+      setSubmitting(false);         // <-- NEW
+      setContent("");               // dọn form
+      setFiles([]);
+    }
+  }
+  if (!open) return null;
   return (
    
      
