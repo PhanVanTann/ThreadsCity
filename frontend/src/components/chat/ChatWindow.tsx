@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState,useEffect,useRef } from "react";
 import { MdOutlineArrowBack } from "react-icons/md";
 import { LuSendHorizontal, LuX } from "react-icons/lu";
 import { FaPaperclip, FaRegSmile } from "react-icons/fa";
@@ -22,6 +22,8 @@ export default function ChatWindow({
     const [mediaFile, setMediaFile] = useState<string | null>(null);
     const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
     const [showEmoji, setShowEmoji] = useState(false);
+    const listRef = useRef<HTMLDivElement | null>(null);
+   const bottomRef = useRef<HTMLDivElement | null>(null);
     const meId = String(me);
     const thread = useMemo(() => (
       allMessages
@@ -41,7 +43,9 @@ export default function ChatWindow({
       else setMediaType(null);
       setMediaFile(url);
     };
-   
+     useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [thread.length, other._id]);
   
     const sendNow = () => {
       const t = text.trim();
@@ -67,7 +71,7 @@ export default function ChatWindow({
           <div className="font-medium text-sm">{other.name}</div>
         </div>
   
-        <div className="flex-1 min-h-0 p-3 overflow-y-auto space-y-2">
+        <div ref={listRef} className="flex-1 min-h-0 p-3 overflow-y-auto space-y-2">
           {thread.map((m) => {
             const mine = String(m.send_user_id) === meId;
             return (
@@ -88,16 +92,17 @@ export default function ChatWindow({
                   {m.text && <div className="whitespace-pre-wrap">{m.text}</div>}
                   <div className="text-[10px] opacity-70 mt-1 text-right">
                    {new Date(m.created_at).toLocaleTimeString("vi-VN", {
-  timeZone: "Asia/Ho_Chi_Minh",
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: false
-})}
+                    timeZone: "Asia/Ho_Chi_Minh",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                  })}
                     </div>
                 </div>
               </div>
             );
           })}
+           <div ref={bottomRef} />
         </div>
   
         <div className="shrink-0 p-3 border-t border-gray-200 dark:border-[#2c2c2c]">

@@ -6,6 +6,7 @@ import friendReducer from './slice/friendSlice'
 import chatReducer from './slice/chatSlice'
 import postReducer from './slice/postSlice'
 import { ImOffice } from 'react-icons/im'
+import commentReducer from './slice/commentSlice'
 import usersReducer from './slice/userSlice'
 
 const persistConfig = {
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   chat:chatReducer,
   post:postReducer,
   user:usersReducer,
+  comment:commentReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

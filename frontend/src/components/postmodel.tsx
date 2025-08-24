@@ -56,8 +56,18 @@ const navigate = useNavigate()
     if (currentUserId) getUserById(currentUserId, dispatch);
   }, [currentUserId, dispatch]);
 
+  // phản hồi tạo bài
+  // useEffect(() => {
+  //   if (createOk) {
+  //     toast.success("Đăng bài thành công!");
+  //     setContent("");
+  //     setFiles([]);
+  //     onClose();
+  //   } else if (createFail) {
+  //     toast.error("Đăng bài thất bại!");
+  //   }
+  // }, [createOk, createFail, onClose]);
  
-
   // click outside/Escape
   useClickOutside([menuRef], requestClose, {
     enabled: open && !confirmOpen,
@@ -176,8 +186,8 @@ const navigate = useNavigate()
                         v.src = url;
                         await new Promise<void>((r) => {
                           v.onloadedmetadata = () => {
-                            if (v.duration <= 30) valid.push(f);
-                            else toast.error("Video tối đa 30 giây!");
+                            if (v.duration <= 20) valid.push(f);
+                            else toast.error("Video tối đa 20 giây!");
                             URL.revokeObjectURL(url);
                             r();
                           };

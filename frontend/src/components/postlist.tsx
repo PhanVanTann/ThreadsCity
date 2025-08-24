@@ -12,7 +12,7 @@ export const mergeMediaToPosts = (rawPosts: any[]) => {
   }));
 };
 export default function PostList() {
-   const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const { data, isFetching, error } = useSelector((state: any) => state.post.getListPost);
 
   useEffect(() => {

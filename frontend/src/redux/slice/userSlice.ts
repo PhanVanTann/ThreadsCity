@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { tr } from "framer-motion/client";
 
 const usersSlice = createSlice({
     name:"user",
