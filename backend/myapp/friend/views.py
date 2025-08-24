@@ -12,11 +12,24 @@ class FriendView(APIView):
         return JsonResponse(result,status = 201)
     def get(self,request):
         user_id = request.GET.get('user_id') 
-        result = friendService.get_flowersbyuserid(user_id)
+        my_id = request.GET.get('my_id')
+        follower =False
+        if request.GET.get('follower'):
+            follower = request.GET.get('follower')
+        
+        result = friendService.get_flowersbyuserid(user_id,my_id,follower)
         return JsonResponse(result,status = 200)
 
 class ListFriendView(APIView):
     def get(self,request):
         user_id = request.GET.get('user_id') 
         result = friendService.getlistfriend(user_id)
+        return JsonResponse(result,status = 200)
+    
+class IsFriendView(APIView):
+    def get(self,request):
+        user_id = request.GET.get('user_id') 
+        follower_id = request.GET.get('follower_id')
+        
+        result = friendService.isFriend(user_id,follower_id)
         return JsonResponse(result,status = 200)

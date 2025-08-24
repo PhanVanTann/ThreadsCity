@@ -13,8 +13,7 @@ type Post = {
   first_name: string;
   last_name: string;
   avatar: string;
-  text: string | null;
-  media: string | null;     // <-- chỉ 1 field string
+  text: string | null; // <-- chỉ 1 field string
   is_video?: boolean;
   flag: boolean;
   total_love: number;
