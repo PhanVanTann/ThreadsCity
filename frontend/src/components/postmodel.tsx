@@ -73,8 +73,6 @@ const navigate = useNavigate()
       toast.error("Vui lòng nhập nội dung hoặc chọn media");
       return;
     }
-
-    // Nếu BE nhận 1 file:
     createPost(
       { user_id: currentUserId, text: content, file: files[0] },
       dispatch,navigate
