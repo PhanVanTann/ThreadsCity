@@ -9,9 +9,11 @@ from bson import ObjectId
 class collectionUser:
     def __init__(self):
         self.collection_users = mongo.get_collection('users')
+        self.collection_friends = mongo.get_collection('friend')
 
     def get_collection_user(self):
         return self.collection_users
+   
 
 class UserService(collectionUser):
     def __init__(self):
@@ -73,4 +75,46 @@ class UserService(collectionUser):
             }
         except Exception as e:
             print(e)
+    def getListUser(self, user_id: str):
+        try:
+            cursor = self.collection_users.find(
+                {},
+                {"_id": 1, "email": 1, "first_name": 1, "last_name": 1, "role": 1, "avatar": 1}
+            )
+
+            listUser = []
+            for item in cursor:
+                
+                uid = str(item["_id"])
+
+                isfollower = self.collection_friends.find_one({"follower_id": user_id, "followee_id": uid})
+                isfollowing = self.collection_friends.find_one({"follower_id": uid, "followee_id": user_id})
+
+                if isfollower and isfollowing:
+                    status = "friend"
+                elif isfollower and not isfollowing:
+                    status = "follower"   
+                elif not isfollower and isfollowing:
+                    status = "following"  
+                else:
+                    status = "nofollow"
+
+                user_obj = {
+                    "_id": uid,
+                    "email": item.get("email"),
+                    "first_name": item.get("first_name"),
+                    "last_name": item.get("last_name"),
+                    "role": item.get("role"),
+                    "avatar": item.get("avatar"),
+                    "is_friend": status
+                }
+                listUser.append(user_obj)
+
+            return {
+                "success": True,
+                "data": listUser
+            }
+        except Exception as e:
+            print("getListUser error:", e)
+            return {"success": False, "message": "Internal error"}
 userService = UserService()

@@ -20,6 +20,7 @@ type Post = {
   total_comment: number;
   created_at: string;
   status: string;
+  media:[]
 };
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
