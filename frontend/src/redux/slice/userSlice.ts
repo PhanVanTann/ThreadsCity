@@ -8,6 +8,12 @@ const usersSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
+        },
+        getListUser:{
+            data:[],
+            isFetching: false,
+            error: false,
+            success: false,
         }
     },
     reducers:{
@@ -29,6 +35,24 @@ const usersSlice = createSlice({
             state.getUserById.error= true;
             state.getUserById.success= false;
         },
+        getListUserStart:(state) => {
+            state.getListUser.data=[];
+            state.getListUser.isFetching = true;
+            state.getListUser.error= false;
+            state.getListUser.success= false;
+        },
+        getListUserSuccess:(state,action) => {
+            state.getListUser.data=action.payload;
+            state.getListUser.isFetching = false;
+            state.getListUser.error= false;
+            state.getListUser.success= true;
+        },
+        getListUserFailure:(state) => {
+            state.getListUser.data=[];
+            state.getListUser.isFetching = false;
+            state.getListUser.error= true;
+            state.getListUser.success= false;
+        },
 
     },
 
@@ -37,6 +61,9 @@ const usersSlice = createSlice({
 export const {
     getUserByIdStart,
     getUserByIdSuccess,
-    getUserByIdFailure
+    getUserByIdFailure,
+    getListUserFailure,
+    getListUserStart,
+    getListUserSuccess
 } = usersSlice.actions;
 export default usersSlice.reducer;
