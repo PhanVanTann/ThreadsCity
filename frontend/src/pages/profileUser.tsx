@@ -45,13 +45,14 @@ export default function ProfileUser() {
     bio: userData?.bio,
   };
   useEffect(() => {
-  // Sau 2 giây thì tắt skeleton
-  const timer = setTimeout(() => {
-    setShowSkeleton(false);
-  }, 1500);
+      // Sau 2 giây thì tắt skeleton
+      const timer = setTimeout(() => {
+        setShowSkeleton(false);
+      }, 1500);
+      
+      return () => clearTimeout(timer); // clear khi unmount
+    }, []);
 
-  return () => clearTimeout(timer); // clear khi unmount
-}, []);
     const handleClickUser = (userId: string) => {
           navigate(`/profile/${userId}`);
       }
@@ -113,6 +114,9 @@ console.log("followers", followers.length);
     // // Nếu muốn refresh lại info:
     // // await getUserById(currentUserId, dispatch);
   };
+   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [userId, selectedIndex]);
   return (
    
      <div>

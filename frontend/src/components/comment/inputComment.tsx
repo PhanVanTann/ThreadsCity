@@ -48,7 +48,7 @@ export default function InputComment({ replyText,
         tabIndex={-1}
         title="Chọn emoji"
       >
-        <FaRegSmile size={28} />
+        <FaRegSmile size={20} />
       </button>
         <div className='w-full flex '>
                 <input

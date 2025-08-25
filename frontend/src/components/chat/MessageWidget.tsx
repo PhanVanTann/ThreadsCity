@@ -17,7 +17,7 @@ export default function MessageWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<MessageDoc[]>([]);
     const [activeOther, setActiveOther] = useState<ObjectId | null>(null);
-    const btnRef = useRef<HTMLButtonElement>(null);
+    const btnRef = useRef<HTMLDivElement>(null);   
     const menuRef = useRef<HTMLDivElement>(null);
     const dispatch = useDispatch();
     const wsRef = useRef<ReturnType<typeof connectChatWS> | null>(null);
@@ -60,15 +60,15 @@ export default function MessageWidget() {
     console.log("datamerge",merged)
   
     const hist: MessageDoc[] = merged.map((m: any) => ({
-  id: (m._id ? String(m._id) : `${m.created_at}-${m.send_id}-${m.text ?? ""}`),
-  user_id: String(currentUserId!),
-  send_user_id: String(m.send_id),
-  receive_user_id: String(m.receiver_id),
-  text: m.text || undefined,
-  image: m.media?.image || undefined,
-  video: m.media?.video || undefined,
-  created_at: m.created_at
-}));
+      id: (m._id ? String(m._id) : `${m.created_at}-${m.send_id}-${m.text ?? ""}`),
+      user_id: String(currentUserId!),
+      send_user_id: String(m.send_id),
+      receive_user_id: String(m.receiver_id),
+      text: m.text || undefined,
+      image: m.media?.image || undefined,
+      video: m.media?.video || undefined,
+      created_at: m.created_at
+    }));
     setMessages(prev => {
       // 1) put prev vào map (giữ optimistic đang hiển thị)
       const map = new Map<string, MessageDoc>();
@@ -153,23 +153,24 @@ export default function MessageWidget() {
     const otherUser =
       activeOther && (friends.find((f) => f._id === activeOther) || { _id: activeOther, name: activeOther });
    
-    useClickOutside([btnRef, menuRef], () =>setIsOpen((s) => !s), {
+    useClickOutside([btnRef, menuRef], () => setIsOpen(false), {
     enabled: isOpen,
-    onEscape: () => setIsOpen((s) => !s),
+    onEscape:() => setIsOpen(false),
   });
   
     return (
       <div className="relative">
         {/* Nút mở */}
         <div
-          onClick={() => setIsOpen((s) => !s)}
-          className="fixed cursor-pointer flex justify-center items-center bottom-5 right-5 w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1d1d1d] shadow-lg"
+          ref={btnRef}                                   // ✅ gắn ref vào nút
+          onClick={() => setIsOpen(s => !s)}   
+          className="fixed z-1000 cursor-pointer flex justify-center items-center bottom-5 right-5 w-12 h-12 rounded-full bg-gray-100 dark:bg-[#1d1d1d] shadow-lg"
         >
           <AiOutlineMessage size={24} />
         </div>
   
         {isOpen && (
-          <div ref={menuRef} className="fixed bottom-20 right-5 w-[330px] h-[500px] bg-white dark:bg-[#181818] shadow-2xl rounded-xl overflow-hidden border border-gray-200 dark:border-[#2c2c2c]">
+          <div ref={menuRef} className="fixed z-1001 bottom-20 right-5 w-[330px] h-[500px] bg-white dark:bg-[#181818] shadow-2xl rounded-xl overflow-hidden border border-gray-200 dark:border-[#2c2c2c]">
             <div className="h-full flex flex-col">
               <div className="shrink-0 p-3 font-semibold text-sm border-b border-gray-200 dark:border-[#2c2c2c]">
                 Messages

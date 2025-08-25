@@ -12,6 +12,7 @@ import { CreateComments, GetComments } from "src/redux/api/apiRequestComment";
 import { useNavigate } from 'react-router-dom';
 import { deletePostByUser ,getlistPost,getPostValidById} from 'src/redux/api/apiRequestPost.js';
 import toast from 'react-hot-toast';
+import { stringify } from 'querystring';
 
 
 type Post = {
@@ -57,10 +58,13 @@ export default function Post({ post }: { post: Post }) {
     if (Array.isArray(raw)) return raw.find(Boolean) ?? '';
     return post.media ?? '';
   }, [post.media]);
-  console.log(currentUserId,"llllll")
+
   const isVideo = mediaUrl ? isVideoUrl(mediaUrl) : false;
+
   const handleClickProfileUser = (user_id:string)=>{
-      navigate(`profile/${user_id}`)
+        if(user_id!==currentUserId)  
+
+         navigate(`/profile/${user_id}`)
   }
 
 useEffect(() => {
@@ -158,14 +162,16 @@ useEffect(() => {
 
       {/* Single media */}
       {mediaUrl && (
-        <div className="relative w-full h-[400px] flex justify-center items-center overflow-hidden rounded-lg">
+        <div  
+              onClick={() => setOpenComment(v => !v)} 
+              className="relative w-full h-[400px] flex justify-center items-center overflow-hidden rounded-lg">
           {isVideo ? (
             <video controls className="w-full rounded-lg">
               <source src={mediaUrl} />
               Trình duyệt không hỗ trợ video.
             </video>
           ) : (
-            <img src={mediaUrl} alt="media" className="w-full rounded-lg" />
+            <img src={mediaUrl} alt="media" className="h-full rounded-lg" />
           )}
         </div>
       )}
@@ -207,17 +213,20 @@ useEffect(() => {
     <h3 className="font-semibold">Bình luận</h3>
     <button onClick={() => setOpenComment(false)}>Đóng</button>
   </div>
-    <div className='w-full h-full flex gap-3 p-4 overflow-hidden'>
+    <div className='w-full h-full flex justify-between gap-3 p-4 overflow-hidden'>
       {/* Media */}
-    {mediaUrl.length > 0 && (
-        isVideo ? (
-          <video controls className="w-full max-w-[70%] rounded-lg ">
-            <source src={mediaUrl} />
-          </video>
-        ) : (
-          <img src={mediaUrl} className="w-full max-w-[80%] rounded-lg " />
-        )
-      )}
+      <div className='flex-shrink-0 w-full flex-1 flex justify-center items-center '>
+         {mediaUrl.length > 0 && (
+            isVideo ? (
+              <video controls className="w-full  rounded-lg ">
+                <source src={mediaUrl} />
+              </video>
+            ) : (
+              <img src={mediaUrl} className="h-full  rounded-lg " />
+            )
+          )}
+      </div>
+ 
 
             
           
