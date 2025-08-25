@@ -23,7 +23,6 @@ const navigate = useNavigate()
   ) as string | undefined;
 
 
-
   const [files, setFiles] = useState<File[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [content, setContent] = useState("");
@@ -90,13 +89,12 @@ const navigate = useNavigate()
     onClose();                      // <-- ĐÓNG MODAL NGAY LẬP TỨC
 
     try {
-      await createPost(
+      createPost(
         { user_id: currentUserId, text: content, file: files[0] },
         dispatch,
         navigate
       );
-      navigate('/loadingpost');     // như bạn đang làm
-      // (optional) toast.success("Đăng bài thành công!");
+      navigate('/loadingpost');     ;
  
     } finally {
       setSubmitting(false);         // <-- NEW

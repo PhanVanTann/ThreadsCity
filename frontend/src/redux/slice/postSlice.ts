@@ -22,6 +22,12 @@ const postSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
+        },
+        deletePostByUser:{
+            data:null,
+            isFetching: false,
+            error: false,
+            success: false,
         }
     },
     reducers:{
@@ -81,6 +87,25 @@ const postSlice = createSlice({
             state.getPostValidById.error= true;
             state.getPostValidById.success= false;
         },
+        //delete ppost
+          deletePostByUserStart:(state) => {
+            state.deletePostByUser.data=null;
+            state.deletePostByUser.isFetching = true;
+            state.deletePostByUser.error= false;
+            state.deletePostByUser.success= false;
+        },
+        deletePostByUserSuccess:(state,action) => {
+            state.deletePostByUser.data=action.payload;
+            state.deletePostByUser.isFetching = false;
+            state.deletePostByUser.error= false;
+            state.deletePostByUser.success= true;
+        },
+        deletePostByUserFailure:(state) => {
+            state.deletePostByUser.data=null;
+            state.deletePostByUser.isFetching = false;
+            state.deletePostByUser.error= true;
+            state.deletePostByUser.success= false;
+        },
     }
 })
 
@@ -93,6 +118,9 @@ export const {
    createPostSuccess,
    getPostValidByIdFailure,
    getPostValidByIdStart,
-   getPostValidByIdSuccess
+   getPostValidByIdSuccess,
+   deletePostByUserFailure,
+   deletePostByUserStart,
+   deletePostByUserSuccess
 } = postSlice.actions;
 export default postSlice.reducer;
