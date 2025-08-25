@@ -57,18 +57,6 @@ const navigate = useNavigate()
   useEffect(() => {
     if (currentUserId) getUserById(currentUserId, dispatch);
   }, [currentUserId, dispatch]);
-
-  // phản hồi tạo bài
-  // useEffect(() => {
-  //   if (createOk) {
-  //     toast.success("Đăng bài thành công!");
-  //     setContent("");
-  //     setFiles([]);
-  //     onClose();
-  //   } else if (createFail) {
-  //     toast.error("Đăng bài thất bại!");
-  //   }
-  // }, [createOk, createFail, onClose]);
  
   // click outside/Escape
   useClickOutside([menuRef], requestClose, {
@@ -86,8 +74,9 @@ const navigate = useNavigate()
       return;
     }
 
-    setSubmitting(true);            // <-- NEW
-    onClose();                      // <-- ĐÓNG MODAL NGAY LẬP TỨC
+    setSubmitting(true);            
+    onClose() ;
+    navigate('/loadingpost');             
 
     try {
       await createPost(
@@ -95,11 +84,9 @@ const navigate = useNavigate()
         dispatch,
         navigate
       );
-      navigate('/loadingpost');     // như bạn đang làm
-      // (optional) toast.success("Đăng bài thành công!");
  
     } finally {
-      setSubmitting(false);         // <-- NEW
+      setSubmitting(false);         
       setContent("");               // dọn form
       setFiles([]);
     }
