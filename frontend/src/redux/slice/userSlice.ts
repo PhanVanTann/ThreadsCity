@@ -1,4 +1,12 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice,type PayloadAction } from "@reduxjs/toolkit";
+
+type User = {
+  _id: string;
+  first_name?: string;
+  last_name?: string;
+  avatar?: string;
+  // ...các field khác
+};
 
 const usersSlice = createSlice({
     name:"user",
@@ -14,7 +22,13 @@ const usersSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
-        }
+        },
+          getUserByCommentId: {
+            data: {} as Record<string, User>,   // ✅ map { [commentId]: User }
+            isFetching: false,
+            error: false,
+            success: false,
+    },
     },
     reducers:{
         getUserByIdStart:(state) => {
@@ -54,9 +68,31 @@ const usersSlice = createSlice({
             state.getListUser.success= false;
         },
 
-    },
+   
 
-})
+    // --- getUserByCommentId (sửa lại) ---
+    getUserByCommentIdStart: (state) => {
+      state.getUserByCommentId.isFetching = true;
+      state.getUserByCommentId.error = false;
+      state.getUserByCommentId.success = false;
+    },
+    getUserByCommentIdSuccess: (
+      state,
+      action: PayloadAction<{ commentId: string; user: User }>
+    ) => {
+      const { commentId, user } = action.payload;
+      state.getUserByCommentId.data[commentId] = user; // ✅ lưu theo commentId
+      state.getUserByCommentId.isFetching = false;
+      state.getUserByCommentId.error = false;
+      state.getUserByCommentId.success = true;
+    },
+    getUserByCommentIdFailure: (state) => {
+      state.getUserByCommentId.isFetching = false;
+      state.getUserByCommentId.error = true;
+      state.getUserByCommentId.success = false;
+    },
+  },
+});
 
 export const {
     getUserByIdStart,
@@ -64,6 +100,10 @@ export const {
     getUserByIdFailure,
     getListUserFailure,
     getListUserStart,
-    getListUserSuccess
+    getListUserSuccess,
+    getUserByCommentIdStart,
+    getUserByCommentIdSuccess,
+    getUserByCommentIdFailure,
 } = usersSlice.actions;
+
 export default usersSlice.reducer;

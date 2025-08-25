@@ -1,10 +1,12 @@
+import { useDispatch, useSelector } from "react-redux";
 import Comment from "./comment";
-import { use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 
 
 export default function CommentList({postId, comments, onReply }: { postId:string; comments: any[]; onReply: (text: string, parentId: string) => void; }) {
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
-
+  const dispatch = useDispatch();
+  const userData = useSelector((state:any)=>state.user.getUserById?.data?.data)
   // Hàm để bật hoặc tắt emoji picker cho comment
   
   const handleShowPicker = (commentId: string) => {
@@ -16,6 +18,11 @@ export default function CommentList({postId, comments, onReply }: { postId:strin
       setActiveCommentId(commentId);
     }
   };
+    // useEffect(() => {
+    //   if (!comment.user_id) return;
+      
+    //   getUserById(comment.user_id, dispatch);
+    // }, [comment.user_id, dispatch]);
 
   const renderComments = (parentId: string | null = null) => {
     return comments
