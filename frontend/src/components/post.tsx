@@ -294,7 +294,7 @@ useEffect(() => {
       setDeleting(true);
       await deletePostByUser({"user_id":currentUserId,"post_id":postid},dispatch)
       await getlistPost(dispatch)
-      await  getPostValidById(currentUserId,dispatch)
+      await  getPostValidById(currentUserId as string,dispatch)
       setOpenDel(false);
       
     } finally {
