@@ -12,6 +12,7 @@ import { CreateComments, GetComments } from "src/redux/api/apiRequestComment";
 import { useNavigate } from 'react-router-dom';
 import { deletePostByUser ,getlistPost,getPostValidById} from 'src/redux/api/apiRequestPost.js';
 import toast from 'react-hot-toast';
+import { stringify } from 'querystring';
 
 
 type Post = {
@@ -302,7 +303,7 @@ useEffect(() => {
       setDeleting(true);
       await deletePostByUser({"user_id":currentUserId,"post_id":postid},dispatch)
       await getlistPost(dispatch)
-      await  getPostValidById(currentUserId,dispatch)
+      await  getPostValidById(currentUserId as string,dispatch)
       setOpenDel(false);
       
     } finally {
