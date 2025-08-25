@@ -5,11 +5,13 @@ import { FaRegComment } from 'react-icons/fa';
 import { formatTimeAgo } from '../utils/formatIimeAgo.js';
 import HeartButton from './heart';
 import CommentList from '../components/comment/commentList.js';
-
+import DeleteConfirmModal from './DeleteConfirmModal.js';
 import CreateComment from './comment/createComment.js';
 import { useDispatch, useSelector } from "react-redux";
 import { CreateComments, GetComments } from "src/redux/api/apiRequestComment";
 import { useNavigate } from 'react-router-dom';
+import { deletePostByUser ,getlistPost,getPostValidById} from 'src/redux/api/apiRequestPost.js';
+import toast from 'react-hot-toast';
 
 
 type Post = {
@@ -43,6 +45,10 @@ export default function Post({ post }: { post: Post }) {
   const { data, isFetching, error, success } = commentsState;
   const comments: any[] = data?.data ?? [];
   const currentUserId = useSelector((s:any) => s.auth.login.currentUser?.user_id) as string | undefined;
+
+  const [openDel, setOpenDel] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [postid,setPostId] = useState('')
 
   console.log("comments", comments);
   // chịu trường hợp BE lỡ trả media là mảng: lấy phần tử đầu
@@ -132,8 +138,9 @@ useEffect(() => {
             <button 
               className='block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-b-lg'
               onClick={()=>{
-                // Xử lý xóa bài viết
                 setOnClickMore(false)
+                setOpenDel(true)
+                setPostId(post._id)
               }}
             >
               Xóa bài viết
@@ -278,8 +285,25 @@ useEffect(() => {
 
   </div>
 )}
-    
+    <DeleteConfirmModal
+  open={openDel}
+  loading={deleting}
+  onClose={() => setOpenDel(false)}
+  onConfirm={async () => {
+    try {
+      setDeleting(true);
+      await deletePostByUser({"user_id":currentUserId,"post_id":postid},dispatch)
+      await getlistPost(dispatch)
+      await  getPostValidById(currentUserId,dispatch)
+      setOpenDel(false);
+      
+    } finally {
+      setDeleting(false);
+    }
+  }}
+/>
 
     </div>
+    
   );
 }

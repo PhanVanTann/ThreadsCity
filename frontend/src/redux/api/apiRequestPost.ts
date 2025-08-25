@@ -6,9 +6,13 @@ import { getListPostFailure,
     createPostSuccess ,
     getPostValidByIdFailure,
     getPostValidByIdStart,
-    getPostValidByIdSuccess
+    getPostValidByIdSuccess,
+    deletePostByUserFailure,
+    deletePostByUserStart,
+    deletePostByUserSuccess
 } from "../slice/postSlice"
 import axiosInstance from "../../axios/axios.interceptor";
+import toast from "react-hot-toast";
 
 
 export const getlistPost = async (dispatch:any) => {
@@ -62,5 +66,28 @@ export const getPostValidById = async (user_id:string,dispatch:any) => {
         console.error("failed:", error);
 
         dispatch(getPostValidByIdFailure())
+    }
+}
+export const deletePostByUser = async (data:any,dispatch:any) => {
+    dispatch(deletePostByUserStart())
+    try {
+        console.log(data,"pppppp")
+        const p =  axiosInstance.delete(`/post/`,{
+            params:{
+                "user_id":data.user_id,
+                "post_id":data.post_id
+            }
+        });
+        toast.promise(p, {
+          loading: "Đang xoá...",
+          success: "xoá bài thành công",
+          error: "xoá thất bại thất bại!",
+        });
+        const res = await p
+        dispatch(deletePostByUserSuccess(res.data));
+    } catch (error) {
+        console.error("failed:", error);
+
+        dispatch(deletePostByUserFailure())
     }
 }

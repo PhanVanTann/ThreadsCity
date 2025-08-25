@@ -5,8 +5,7 @@ from .services import userService
 
 
 class UserView(APIView):
-    def get(self, request,*args, **kwargs):
-        return JsonResponse({"message": "User data retrieved successfully."})
+    
 
     def post(self, request,*args, **kwargs): 
         user_data = request.data
@@ -19,4 +18,9 @@ class UserView(APIView):
     def get(self,request):
         user_id = request.GET.get("user_id")
         result = userService.getUserById(user_id)
+        return JsonResponse(result,status=200)
+class UsersView(APIView):
+    def get(self, request,*args, **kwargs):
+        user_id = request.GET.get("user_id")
+        result = userService.getListUser(user_id)
         return JsonResponse(result,status=200)

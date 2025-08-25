@@ -98,6 +98,7 @@ export const isFriendUser = async (data: any,dispatch: any) => {
         });
         console.log('hiiiii', res.data)
         dispatch(isFriendUserSuccess(res.data));
+        
     } catch (error) {
         console.error("Login failed:", error);
 

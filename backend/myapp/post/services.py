@@ -205,3 +205,19 @@ class CensorshipService(collection):
             return {"success": True, "data": datas}
         except Exception as e:
             return {"success": False, "error": str(e)} 
+    
+    def deletePost(self,user_id,post_id):
+        try:
+            print(user_id)
+            print(post_id)
+            postData = self.post_collection.find_one({'_id':ObjectId(post_id),'user_id':user_id})
+            if not postData:
+                return {"success":False,"message":"không tìm thấy user hay bài đăng"}
+            result = self.post_collection.delete_one({"_id": ObjectId(post_id), "user_id": user_id})
+            if result.deleted_count > 0:
+                return {"success": True, "message": "xoá bài thành công"}
+            else:
+                return {"success": False, "message": "Post not found or not owned by this user"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)} 
