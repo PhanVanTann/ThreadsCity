@@ -3,11 +3,12 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from .services import emailService
 from utils.jwt import decode_token
-from .services import LoginService, UserLogoutService, GoogoleService
+from .services import LoginService, UserLogoutService, GoogoleService,AuthServicer
 from utils.jwt import create_cookie
 from django.http import HttpResponseRedirect
 import json
 # Create your views here.
+authServicer = AuthServicer()
 class EmailView(APIView):
     def get(self, request):
         token = request.GET.get('token')
@@ -51,6 +52,7 @@ class LoginView(APIView):
                 "success": True,
                 "message": "Login successful",
                 "user_id": login_response['user_id'],
+                "access_token":access_token, 
                 "role": login_response['role'],
             }, status=200)
             response.set_cookie("access_token", access_token, httponly=True, max_age=3600)
@@ -100,6 +102,7 @@ class GoogleLoginView(APIView):
                 "success": True,
                 "message": "Login successful",
                 "user_id": response['user_id'],
+                "access_token":access_token, 
                 "role": response['role'],
             }, status=200)
             response.set_cookie("access_token", access_token, httponly=True, max_age=3600)
@@ -107,3 +110,15 @@ class GoogleLoginView(APIView):
             return response
         
         return JsonResponse({"error": "Invalid request"}, status=400)   
+class AuthView(APIView):
+    def post(self,request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        result = authServicer.refreshToken(refresh_token)
+        print(result,"jjhhh")
+        response = JsonResponse({
+                "success": True,
+                "message":result['message']     
+            }, status=200)
+        
+        response.set_cookie("access_token", result['new_accessToken'], httponly=True, max_age=3600)
+        return response

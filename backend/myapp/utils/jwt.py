@@ -27,7 +27,7 @@ def decode_token(token: str):
         return decoded
 
     except ExpiredSignatureError:
-        return {"error": "expired"}
+        return {"error": "expired_token"}
 
     except InvalidSignatureError:
         return {"error": "invalid_signature"}
@@ -54,7 +54,7 @@ def create_access_token(user_id,role):
     payload = {
         "user_id": user_id,  
         "role":role,
-        "exp": datetime.utcnow() + timedelta(minutes=30), 
+        "exp": datetime.utcnow() + timedelta(seconds=30), 
         "purpose": "user_authentication" 
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")

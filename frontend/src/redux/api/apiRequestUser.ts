@@ -23,6 +23,7 @@ export const getUserById = async (user_id: string,dispatch: any) => {
         );
         console.log('userData', res.data)
         dispatch(getUserByIdSuccess(res.data));
+        return res.data
     } catch (error) {
         console.error("Login failed:", error);
 
@@ -77,6 +78,7 @@ export const updateUser = async (user_id:string,data:FormData,dispatch: any) => 
         });
         console.log('update', res.data)
         dispatch(updateUserSuccess(res.data));
+        return res.data
     } catch (error) {
         console.error("failed:", error);
 

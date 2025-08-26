@@ -21,22 +21,22 @@ export default function ProfileEditModal({
 }: {
   open: boolean;
   onClose: () => void;
-  initial: Profile;
+  initial?: Profile;
   onSubmit: (fd: FormData) => Promise<void> | void;
   loading?: boolean;
 }) {
 
-  const [firstName, setFirstName] = useState(initial.first_name ?? "");
-  const [lastName, setLastName] = useState(initial.last_name ?? "");
-  const [introduce, setintroduce] = useState(initial.introduce ?? "");
+  const [firstName, setFirstName] = useState(initial?.first_name ?? "");
+  const [lastName, setLastName] = useState(initial?.last_name ?? "");
+  const [introduce, setintroduce] = useState(initial?.introduce ?? "");
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | undefined>(initial.avatar);
+  const [preview, setPreview] = useState<string | undefined>(initial?.avatar);
   const [confirmOpen, setConfirmOpen] = useState(false);
   
   const isDirty =
-    firstName !== (initial.first_name ?? "") ||
-    lastName !== (initial.last_name ?? "") ||
-    introduce !== (initial.introduce ?? "") ||
+    firstName !== (initial?.first_name ?? "") ||
+    lastName !== (initial?.last_name ?? "") ||
+    introduce !== (initial?.introduce ?? "") ||
     !!file;
 
   const boxRef = useRef<HTMLDivElement | null>(null);
@@ -48,11 +48,11 @@ export default function ProfileEditModal({
   useEffect(() => {
     if (!open) return;
     // reset theo initial mỗi lần mở
-    setFirstName(initial.first_name ?? "");
-    setLastName(initial.last_name ?? "");
-    setintroduce(initial.introduce ?? "");
+    setFirstName(initial?.first_name ?? "");
+    setLastName(initial?.last_name ?? "");
+    setintroduce(initial?.introduce ?? "");
     setFile(null);
-    setPreview(initial.avatar);
+    setPreview(initial?.avatar);
 
   }, [open, initial]);
 
@@ -96,7 +96,7 @@ export default function ProfileEditModal({
               onChange={(e) => {
                 const f = e.target.files?.[0] || null;
                 setFile(f);
-                setPreview(f ? URL.createObjectURL(f) : initial.avatar);
+                setPreview(f ? URL.createObjectURL(f) : initial?.avatar);
               }}
             />
           </div>
