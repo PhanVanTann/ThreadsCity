@@ -2,12 +2,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useClickOutside } from "src/hook/useClickOutside";
 import toast from "react-hot-toast";
+import { getUserById } from "src/redux/api/apiRequestUser";
+import { useDispatch, useSelector } from "react-redux";
 
 type Profile = {
   first_name?: string;
   last_name?: string;
-  avatar?: string; // url hiện tại
-  bio?: string;
+  avatar?: string;
+  introduce?: string;
 };
 
 export default function ProfileEditModal({
@@ -23,17 +25,18 @@ export default function ProfileEditModal({
   onSubmit: (fd: FormData) => Promise<void> | void;
   loading?: boolean;
 }) {
+
   const [firstName, setFirstName] = useState(initial.first_name ?? "");
   const [lastName, setLastName] = useState(initial.last_name ?? "");
-  const [bio, setBio] = useState(initial.bio ?? "");
+  const [introduce, setintroduce] = useState(initial.introduce ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | undefined>(initial.avatar);
   const [confirmOpen, setConfirmOpen] = useState(false);
-
+  
   const isDirty =
     firstName !== (initial.first_name ?? "") ||
     lastName !== (initial.last_name ?? "") ||
-    bio !== (initial.bio ?? "") ||
+    introduce !== (initial.introduce ?? "") ||
     !!file;
 
   const boxRef = useRef<HTMLDivElement | null>(null);
@@ -47,9 +50,10 @@ export default function ProfileEditModal({
     // reset theo initial mỗi lần mở
     setFirstName(initial.first_name ?? "");
     setLastName(initial.last_name ?? "");
-    setBio(initial.bio ?? "");
+    setintroduce(initial.introduce ?? "");
     setFile(null);
     setPreview(initial.avatar);
+
   }, [open, initial]);
 
   if (!open) return null;
@@ -122,8 +126,8 @@ export default function ProfileEditModal({
         <div className="mt-3">
           <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Giới thiệu</label>
           <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            value={introduce}
+            onChange={(e) => setintroduce(e.target.value)}
             className="w-full h-24 rounded-lg border border-gray-300 dark:border-[#2b2b2b] bg-white dark:bg-[#181818] p-2 text-gray-900 dark:text-white outline-none resize-none"
             placeholder="Mô tả ngắn..."
           />
@@ -143,7 +147,7 @@ export default function ProfileEditModal({
               const fd = new FormData();
               fd.append("first_name", firstName);
               fd.append("last_name", lastName);
-              fd.append("bio", bio);
+              fd.append("introduce", introduce);
               if (file) fd.append("avatar", file);
               await onSubmit(fd);
             }}

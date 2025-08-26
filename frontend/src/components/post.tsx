@@ -11,8 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { CreateComments, GetComments } from "src/redux/api/apiRequestComment";
 import { useNavigate } from 'react-router-dom';
 import { deletePostByUser ,getlistPost,getPostValidById} from 'src/redux/api/apiRequestPost.js';
-import toast from 'react-hot-toast';
-import { stringify } from 'querystring';
+
 
 
 type Post = {

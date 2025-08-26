@@ -5,6 +5,7 @@ from utils.sendemail import send_verify_email
 from utils.jwt import create_email_token
 from datetime import datetime
 from bson import ObjectId
+import cloudinary.uploader
 
 class collectionUser:
     def __init__(self):
@@ -37,6 +38,7 @@ class UserService(collectionUser):
                 "first_name": user_data.get("first_name"),
                 "last_name": user_data.get("last_name"),
                 "role": "user",
+                "introduce":None,
                 "avatar":"https://res.cloudinary.com/debzpay3s/image/upload/v1755841904/avatar-trang-3_qamssw.jpg",
                 "is_verified": False,
                 "is_google_account": False,
@@ -67,7 +69,7 @@ class UserService(collectionUser):
             return None
     def getUserById(self,user_id):
         try:
-            userdata = self.collection_users.find_one({"_id":ObjectId(user_id)},{"_id":1,"email":1,"first_name":1,"last_name":1,"role":1,"avatar":1})
+            userdata = self.collection_users.find_one({"_id":ObjectId(user_id)},{"_id":1,"email":1,"first_name":1,"last_name":1,"role":1,"avatar":1,"introduce":1})
             userdata["_id"] = str(userdata["_id"])
             return {
                 "success":True,
@@ -106,6 +108,7 @@ class UserService(collectionUser):
                     "last_name": item.get("last_name"),
                     "role": item.get("role"),
                     "avatar": item.get("avatar"),
+                    "introduce":item.get("introduce"),
                     "is_friend": status
                 }
                 listUser.append(user_obj)
@@ -117,4 +120,35 @@ class UserService(collectionUser):
         except Exception as e:
             print("getListUser error:", e)
             return {"success": False, "message": "Internal error"}
+        
+    def upDateUser(self,user_id,data):
+        try:
+            userData = self.collection_users.find_one({'_id':ObjectId(user_id)})
+            if not userData:
+                return {"success":False,"message":"không có user"}
+            avatar = userData['avatar']
+            if data.get('avatar'):
+                up = cloudinary.uploader.upload(data['avatar'], resource_type="image")
+                avatar = up.get("secure_url")
+          
+            update = self.collection_users.update_one({"_id":ObjectId(user_id)},
+                                                       {"$set": {
+                                                            "first_name": data['first_name'],
+                                                            "last_name": data['last_name'],
+                                                            "introduce": data['introduce'],
+                                                            "avatar": avatar
+                                                        }})
+            print(update)
+            result = {
+                "user_id":user_id,
+                "first_name" :data['first_name'],
+                "last_name":data['last_name'],
+                "introduce":data['introduce'],
+                "avatar":avatar
+            }
+            return {"success":True,"message":"update thanh công","data":result}
+        except Exception as e:
+            print(" error:", e)
+            return {"success": False, "message": "Internal error"}
+   
 userService = UserService()

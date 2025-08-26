@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect,useMemo } from 'react';
 import { getUserById } from 'src/redux/api/apiRequestUser';
 import { getFollowsByUserId,createFollowUser ,getFollowerByUserId,isFriendUser} from 'src/redux/api/apiRequestFriend';
+import { updateUser } from 'src/redux/api/apiRequestUser';
 import { useParams,useNavigate } from "react-router-dom";
 import { getPostValidById } from 'src/redux/api/apiRequestPost';
 import ProfileEditModal from 'src/components/ProfileEditModal';
@@ -107,12 +108,12 @@ const postsSorted = useMemo(() => {
 console.log("followers", followers.length);
 
 
-  const handleSubmitEdit = async (fd: FormData) => {
-    // if (!currentUserId) return;
-    // await updateUserProfile(currentUserId, fd, dispatch);
-    // setOpenEdit(false);
-    // // Nếu muốn refresh lại info:
-    // // await getUserById(currentUserId, dispatch);
+  const handleSubmitEdit = async (data: FormData) => {
+    if (!currentUserId) return;
+    await updateUser(currentUserId, data, dispatch);
+    setOpenEdit(false);
+    // Nếu muốn refresh lại info:
+    // await getUserById(currentUserId, dispatch);
   };
    useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -174,14 +175,16 @@ console.log("followers", followers.length);
                     
                </div>
               {userId === currentUserId ? (
-                  <button className="border rounded-lg px-3 py-2" onClick={() => setOpenEdit(true)}>chỉnh sửa 
+                <div >
+                  <button className="border rounded-lg px-3 py-2" onClick={() => setOpenEdit(true)}>chỉnh sửa </button>
+                  
                   <ProfileEditModal
                         open={openEdit}
                         onClose={() => setOpenEdit(false)}
-                        initial={initialProfile}
+                        initial={userData}
                         onSubmit={handleSubmitEdit}
                         loading={updating}
-                      /></button>
+                  /></div>
                 ) : (
                   <div className="border rounded-lg px-3 py-2 invisible">placeholder</div>
                 )}

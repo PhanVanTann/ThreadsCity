@@ -24,11 +24,18 @@ const usersSlice = createSlice({
             success: false,
         },
           getUserByCommentId: {
-            data: {} as Record<string, User>,   // ✅ map { [commentId]: User }
+            data: {} as Record<string, User>,  
             isFetching: false,
             error: false,
             success: false,
+        
     },
+        updateUser:{
+            data:null,
+            isFetching: false,
+            error: false,
+            success: false,
+        }
     },
     reducers:{
         getUserByIdStart:(state) => {
@@ -91,6 +98,25 @@ const usersSlice = createSlice({
       state.getUserByCommentId.error = true;
       state.getUserByCommentId.success = false;
     },
+
+        updateUserStart:(state) => {
+            state.updateUser.data=null;
+            state.updateUser.isFetching = true;
+            state.updateUser.error= false;
+            state.updateUser.success= false;
+        },
+        updateUserSuccess:(state,action) => {
+            state.updateUser.data=action.payload;
+            state.updateUser.isFetching = false;
+            state.updateUser.error= false;
+            state.updateUser.success= true;
+        },
+        updateUserFailure:(state) => {
+            state.updateUser.data=null;
+            state.updateUser.isFetching = false;
+            state.updateUser.error= true;
+            state.updateUser.success= false;
+        },
   },
 });
 
@@ -104,6 +130,9 @@ export const {
     getUserByCommentIdStart,
     getUserByCommentIdSuccess,
     getUserByCommentIdFailure,
+    updateUserFailure,
+    updateUserStart,
+    updateUserSuccess
 } = usersSlice.actions;
 
 export default usersSlice.reducer;

@@ -6,7 +6,10 @@ import { getUserByIdFailure,
         getListUserSuccess,
         getUserByCommentIdFailure, 
         getUserByCommentIdStart, 
-        getUserByCommentIdSuccess
+        getUserByCommentIdSuccess,
+        updateUserFailure,
+        updateUserStart,
+        updateUserSuccess
      } from "../slice/userSlice"
 import axiosInstance from "../../axios/axios.interceptor";
 export const getUserById = async (user_id: string,dispatch: any) => {
@@ -62,3 +65,21 @@ export const getUserByCommentId = (userId: string, commentId: string) => {
     }
   };
 };
+export const updateUser = async (user_id:string,data:FormData,dispatch: any) => {
+    dispatch(updateUserStart())
+    try {
+        const res = await axiosInstance.patch(`/users/`,data,{
+            headers: { 'Content-Type': 'multipart/form-data' },
+            params:{
+                user_id
+            },
+            
+        });
+        console.log('update', res.data)
+        dispatch(updateUserSuccess(res.data));
+    } catch (error) {
+        console.error("failed:", error);
+
+        dispatch(updateUserFailure())
+    }
+}

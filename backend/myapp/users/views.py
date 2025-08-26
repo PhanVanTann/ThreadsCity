@@ -19,6 +19,17 @@ class UserView(APIView):
         user_id = request.GET.get("user_id")
         result = userService.getUserById(user_id)
         return JsonResponse(result,status=200)
+    def patch(self,request):
+        user_id = request.GET.get("user_id")
+        data = {   
+                "first_name":request.data.get('first_name'),
+                "last_name":request.data.get('last_name'),
+                "introduce":request.data.get('introduce')
+        }
+        if request.FILES.get('avatar'):
+            data['avatar'] = request.FILES.get('avatar')
+        result = userService.upDateUser(user_id,data)
+        return JsonResponse(result,status=200)
 class UsersView(APIView):
     def get(self, request,*args, **kwargs):
         user_id = request.GET.get("user_id")

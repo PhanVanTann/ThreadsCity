@@ -161,6 +161,7 @@ class GoogoleService(collection):
                     "first_name": first_name,
                     "last_name": last_name,
                     "role": "user",
+                    "introduce":None,
                     "avatar": picture,
                     "is_verified": True,
                     "is_google_account": True,
