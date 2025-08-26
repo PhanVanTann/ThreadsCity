@@ -64,7 +64,7 @@ useEffect(() => {
         <img
           src={avatar}
           alt="avatar"
-          className="object-cover rounded-full w-[40px] h-[40px] mr-2"
+          className="object-cover rounded-full w-[30px] h-[30px] mr-2"
         />
         <div className="flex items-center gap-2 flex-1">
           <span className="text-[14px] text-white font-bold mr-2">

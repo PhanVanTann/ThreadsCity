@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { CreateComments, GetComments } from "src/redux/api/apiRequestComment";
 import { useNavigate } from 'react-router-dom';
 import { deletePostByUser ,getlistPost,getPostValidById} from 'src/redux/api/apiRequestPost.js';
+import { getUserByCommentId } from 'src/redux/api/apiRequestUser.js';
 
 
 
@@ -45,7 +46,9 @@ export default function Post({ post }: { post: Post }) {
   const { data, isFetching, error, success } = commentsState;
   const comments: any[] = data?.data ?? [];
   const currentUserId = useSelector((s:any) => s.auth.login.currentUser?.user_id) as string | undefined;
-
+    const userPost = useSelector(
+    (s: any) => s.user.getUserByCommentId.data?.[post._id]
+  );
   const [openDel, setOpenDel] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [postid,setPostId] = useState('')
@@ -103,22 +106,27 @@ useEffect(() => {
   };
 }, [openComment]);
 
-
-
+useEffect(() => {
+    if (post.user_id && post._id) {
+      // @ts-ignore nếu bạn chưa định nghĩa AppDispatch
+      dispatch(getUserByCommentId(post.user_id, post._id));
+    }
+  }, [post.user_id, post._id, dispatch]);
+console.log("userPost", userPost);
 
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
       <div className="flex w-full items-center " >
         <img
-          src={post.avatar || 'https://i.pravatar.cc/150?img=1'}
+          src={userPost?.avatar || 'https://i.pravatar.cc/150?img=1'}
           onClick={()=>{handleClickProfileUser(post.user_id)}}
           alt="avatar"
           className="object-cover rounded-full w-[40px] h-[40px] mr-2 cursor-pointer"
         />
         <div className="flex-grow flex items-center">
           <span className="text-white font-bold mr-2">
-            {`${post.last_name ?? ''} ${post.first_name ?? ''}`.trim() || 'Người dùng'}
+            {`${userPost?.last_name ?? ''} ${userPost?.first_name ?? ''}`.trim() || 'Người dùng'}
           </span>
           <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
         </div>
