@@ -10,6 +10,8 @@ class Middleware:
             ("/auth/login/", None),
             ("/users/", ["POST"]),
             ("/auth/refresh-token/",None),
+            ("/auth/googleLogin/",None),
+            ("/auth/verifyEmail/",None),
         ]
               
             self.rules_admin = {
