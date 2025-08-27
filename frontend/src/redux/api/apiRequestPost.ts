@@ -85,6 +85,7 @@ export const deletePostByUser = async (data:any,dispatch:any) => {
         });
         const res = await p
         dispatch(deletePostByUserSuccess(res.data));
+        return res.data
     } catch (error) {
         console.error("failed:", error);
 

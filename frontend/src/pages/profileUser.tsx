@@ -12,6 +12,7 @@ import { useParams,useNavigate } from "react-router-dom";
 import { getPostValidById } from 'src/redux/api/apiRequestPost';
 import ProfileEditModal from 'src/components/ProfileEditModal';
 import { ProfileSkeleton } from 'src/components/ProfileSkeleton';
+import toast from 'react-hot-toast';
 
 export default function ProfileUser() {
    const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
@@ -111,9 +112,13 @@ console.log("followers", followers.length);
   const handleSubmitEdit = async (data: FormData) => {
     if (!currentUserId) return;
     await updateUser(currentUserId, data, dispatch);
+    toast.success("Cập nhật thành công")
+    await getUserById(currentUserId,dispatch)
+    
+    await getPostValidById(currentUserId,dispatch)
     setOpenEdit(false);
-    // Nếu muốn refresh lại info:
-    // await getUserById(currentUserId, dispatch);
+   
+   
   };
    useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -127,7 +132,7 @@ console.log("followers", followers.length);
        <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
         <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-8">
                <img
-                 src={userData?.avatar|| "https://i.pravatar.cc/150?img=1"} // Replace with actual avatar path
+                 src={userData?.avatar|| "https://i.pravatar.cc/150?img=1"} 
                  alt="avatar"
                  className="object-cover rounded-full w-[100px] h-[100px] "
                />
