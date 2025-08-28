@@ -28,6 +28,12 @@ const postSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
+        },
+        getHeartbyPostId:{
+            data:null,
+            isFetching: false,
+            error: false,
+            success: false,
         }
     },
     reducers:{
@@ -106,6 +112,24 @@ const postSlice = createSlice({
             state.deletePostByUser.error= true;
             state.deletePostByUser.success= false;
         },
+        getHeartbyPostIdStart:(state) => {
+            state.getHeartbyPostId.data=null;
+            state.getHeartbyPostId.isFetching = true;
+            state.getHeartbyPostId.error= false;
+            state.getHeartbyPostId.success= false;
+        },
+        getHeartbyPostIdSuccess:(state,action) => {
+            state.getHeartbyPostId.data=action.payload;
+            state.getHeartbyPostId.isFetching = false;
+            state.getHeartbyPostId.error= false;
+            state.getHeartbyPostId.success= true;
+        },
+        getHeartbyPostIdFailure:(state) => {
+            state.getHeartbyPostId.data=null;
+            state.getHeartbyPostId.isFetching = false;
+            state.getHeartbyPostId.error= true;
+            state.getHeartbyPostId.success= false;
+        },
     }
 })
 
@@ -121,6 +145,9 @@ export const {
    getPostValidByIdSuccess,
    deletePostByUserFailure,
    deletePostByUserStart,
-   deletePostByUserSuccess
+   deletePostByUserSuccess,
+   getHeartbyPostIdFailure,
+   getHeartbyPostIdStart,
+   getHeartbyPostIdSuccess,
 } = postSlice.actions;
 export default postSlice.reducer;

@@ -9,7 +9,10 @@ import { getListPostFailure,
     getPostValidByIdSuccess,
     deletePostByUserFailure,
     deletePostByUserStart,
-    deletePostByUserSuccess
+    deletePostByUserSuccess,
+    getHeartbyPostIdStart,
+    getHeartbyPostIdSuccess,
+    getHeartbyPostIdFailure
 } from "../slice/postSlice"
 import axiosInstance from "../../axios/axios.interceptor";
 import toast from "react-hot-toast";
@@ -90,5 +93,19 @@ export const deletePostByUser = async (data:any,dispatch:any) => {
         console.error("failed:", error);
 
         dispatch(deletePostByUserFailure())
+    }
+}
+export const getHeartbyPostId = async (data:any ,dispatch:any) => {
+    dispatch(getHeartbyPostIdStart())
+    try {
+        const res = await axiosInstance.post(`/post/heart/`
+        ,data
+        )
+        console.log("heartdata",res.data)
+        dispatch(getHeartbyPostIdSuccess(res.data));
+    } catch (error) {
+        console.error("failed:", error);
+
+        dispatch(getHeartbyPostIdFailure())
     }
 }

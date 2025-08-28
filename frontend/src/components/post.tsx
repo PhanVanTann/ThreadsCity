@@ -1,5 +1,5 @@
 'use client';
-import React, { use, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AiOutlineMore } from 'react-icons/ai';
 import { FaRegComment } from 'react-icons/fa';
 import { formatTimeAgo } from '../utils/formatIimeAgo.js';
@@ -7,13 +7,11 @@ import HeartButton from './heart';
 import CommentList from '../components/comment/commentList.js';
 import DeleteConfirmModal from './DeleteConfirmModal.js';
 import CreateComment from './comment/createComment.js';
-import { useDispatch, useSelector } from "react-redux";
-import { CreateComments, GetComments } from "src/redux/api/apiRequestComment";
+import { useDispatch, useSelector } from 'react-redux';
+import { CreateComments, GetComments } from 'src/redux/api/apiRequestComment';
 import { useNavigate } from 'react-router-dom';
-import { deletePostByUser ,getlistPost,getPostValidById} from 'src/redux/api/apiRequestPost.js';
+import { deletePostByUser, getHeartbyPostId, getlistPost, getPostValidById } from 'src/redux/api/apiRequestPost.js';
 import { getUserByCommentId } from 'src/redux/api/apiRequestUser.js';
-
-
 
 type Post = {
   _id: string;
@@ -21,106 +19,152 @@ type Post = {
   first_name: string;
   last_name: string;
   avatar: string;
-  text: string | null; // <-- chỉ 1 field string
+  text: string | null;
   is_video?: boolean;
   flag: boolean;
   total_love: number;
   total_comment: number;
   created_at: string;
   status: string;
-  media:[]
+  media: string | string[];
+  list_user_heart: string[];
 };
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
 
 export default function Post({ post }: { post: Post }) {
-  const navigate = useNavigate()
-  const [openComment, setOpenComment] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [onClickMore,setOnClickMore] = useState(false);
-  const [fetched, setFetched] = useState(false);
-  const commentsState = useSelector(
-    (s: any) => s.comment.byPost?.[post._id]
-  ) || { data: null, isFetching: false, error: false, success: false };
-  const myPost = useSelector((s:any)=>s.auth.login.currentUser?.user_id===post.user_id)
-  const { data, isFetching, error, success } = commentsState;
-  const comments: any[] = data?.data ?? [];
-  const currentUserId = useSelector((s:any) => s.auth.login.currentUser?.user_id) as string | undefined;
-    const userPost = useSelector(
-    (s: any) => s.user.getUserByCommentId.data?.[post._id]
-  );
+  const [openComment, setOpenComment] = useState(false);
+  const [onClickMore, setOnClickMore] = useState(false);
   const [openDel, setOpenDel] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [postid,setPostId] = useState('')
+  const [postid, setPostId] = useState('');
 
-  console.log("comments", comments);
-  // chịu trường hợp BE lỡ trả media là mảng: lấy phần tử đầu
+  const currentUserId = useSelector((s: any) => s.auth.login.currentUser?.user_id) as string | undefined;
+  const isMyPost = currentUserId === post.user_id;
+
+  const commentsState =
+    useSelector((s: any) => s.comment.byPost?.[post._id]) ||
+    ({ data: null, isFetching: false, error: false, success: false } as any);
+  const { data, isFetching, error, success } = commentsState;
+  const comments: any[] = data?.data ?? [];
+
+  const userPost = useSelector((s: any) => s.user.getUserByCommentId.data?.[post._id]);
+
+  // Lấy media đầu tiên nếu BE đôi lúc trả mảng
   const mediaUrl = useMemo(() => {
     const raw = post.media as unknown;
     if (Array.isArray(raw)) return raw.find(Boolean) ?? '';
-    return post.media ?? '';
+    return (post.media as string) ?? '';
   }, [post.media]);
 
   const isVideo = mediaUrl ? isVideoUrl(mediaUrl) : false;
 
-  const handleClickProfileUser = (user_id:string)=>{
-        if(user_id!==currentUserId)  
-
-         navigate(`/profile/${user_id}`)
-  }
-
-useEffect(() => {
-  if (!openComment) return;
-  if (success) return; // đã có trong cache thì khỏi fetch
-  GetComments(post._id, dispatch);
-}, [openComment, fetched, post._id, dispatch]);
-
-const handleReply = async (text: string, parentId: string) => {
-  // if (!currentUserId) {
-  //   toast.error("Vui lòng đăng nhập lại");
-  //   return;
-  // }
-  if (!text.trim()) return;
-
-  await CreateComments(
-    {
-      user_id: currentUserId,
-      post_id: post._id,     // id bài post hiện tại
-      content: text.trim(),
-      parent_id: parentId,   // QUAN TRỌNG: id của comment bạn đang reply
+  const handleClickProfileUser = useCallback(
+    (user_id: string) => {
+      if (user_id !== currentUserId) navigate(`/profile/${user_id}`);
     },
-    dispatch
+    [currentUserId, navigate]
   );
-  
-};
-useEffect(() => {
-  if (!openComment) return;
-  const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenComment(false);
-  window.addEventListener("keydown", onKey);
-  const prev = document.body.style.overflow;
-  document.body.style.overflow = "hidden";
- 
-  return () => {
-    window.removeEventListener("keydown", onKey);
-    document.body.style.overflow = prev;
-  };
-}, [openComment]);
 
-useEffect(() => {
+  // Mở comment mới fetch (nếu chưa có cache)
+  useEffect(() => {
+    if (!openComment || success) return;
+    GetComments(post._id, dispatch);
+  }, [openComment, success, post._id, dispatch]);
+
+  const handleReply = useCallback(
+    async (text: string, parentId: string) => {
+      if (!text.trim()) return;
+      await CreateComments(
+        {
+          user_id: currentUserId,
+          post_id: post._id,
+          content: text.trim(),
+          parent_id: parentId,
+        },
+        dispatch
+      );
+    },
+    [currentUserId, post._id, dispatch]
+  );
+
+  // Lock scroll khi mở modal comment
+  useEffect(() => {
+    if (!openComment) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenComment(false);
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [openComment]);
+
+  // Fetch info user của chủ bài post (cache theo post._id)
+  useEffect(() => {
     if (post.user_id && post._id) {
-      // @ts-ignore nếu bạn chưa định nghĩa AppDispatch
+      // @ts-ignore
       dispatch(getUserByCommentId(post.user_id, post._id));
     }
   }, [post.user_id, post._id, dispatch]);
-console.log("userPost", userPost);
+
+  // ----- LIKE STATE  -----
+  const initialLiked = useMemo(() => {
+    return !!currentUserId && Array.isArray(post.list_user_heart) && post.list_user_heart.includes(currentUserId);
+  }, [currentUserId, post.list_user_heart]);
+
+  const [liked, setLiked] = useState<boolean>(initialLiked);
+  const [loveCount, setLoveCount] = useState<number>(post.total_love ?? 0);
+
+  // Chỉ reset khi đổi post
+  useEffect(() => {
+    setLiked(initialLiked);
+    setLoveCount(post.total_love ?? 0);
+  }, [post._id]); // cố ý chỉ phụ thuộc _id
+
+  // Chống double-click & out-of-order
+  const [pending, setPending] = useState(false);
+  const opRef = useRef(0);
+
+  const handleToggleLike = useCallback(async () => {
+    if (!currentUserId || pending) return;
+
+    const next = !liked; // Optimistic
+    setPending(true);
+    const myOp = ++opRef.current;
+
+    setLiked(next);
+    setLoveCount((c) => c + (next ? 1 : -1));
+
+    try {
+      // POST toggle (API tên "getHeartbyPostId" nhưng thực chất là POST)
+      const res: any = await getHeartbyPostId({ post_id: post._id, user_id: currentUserId }, dispatch);
+
+      if (myOp !== opRef.current) return; // chỉ nhận response mới nhất
+
+      if (typeof res?.data?.liked === 'boolean') setLiked(res.data.liked);
+      if (typeof res?.data?.total_love === 'number') setLoveCount(res.data.total_love);
+    } catch {
+      if (myOp === opRef.current) {
+        // rollback
+        setLiked((v) => !v);
+        setLoveCount((c) => c + (next ? -1 : 1));
+      }
+    } finally {
+      if (myOp === opRef.current) setPending(false);
+    }
+  }, [currentUserId, dispatch, liked, post._id, pending]);
 
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
-      <div className="flex w-full items-center " >
+      <div className="flex w-full items-center">
         <img
           src={userPost?.avatar || 'https://i.pravatar.cc/150?img=1'}
-          onClick={()=>{handleClickProfileUser(post.user_id)}}
+          onClick={() => handleClickProfileUser(post.user_id)}
           alt="avatar"
           className="object-cover rounded-full w-[40px] h-[40px] mr-2 cursor-pointer"
         />
@@ -130,28 +174,27 @@ console.log("userPost", userPost);
           </span>
           <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
         </div>
-        {currentUserId==post.user_id&&(
-          <div onClick={()=>setOnClickMore(!onClickMore)} className="p-2 text-white cursor-pointer">
-                  <AiOutlineMore size={20} />
-            </div>
+
+        {isMyPost && (
+          <div onClick={() => setOnClickMore((v) => !v)} className="p-2 text-white cursor-pointer">
+            <AiOutlineMore size={20} />
+          </div>
         )}
-        {(onClickMore && myPost ) &&(
-          <div className='absolute top-10 right-4 bg-gray-700 text-white rounded-lg shadow-lg z-10'>
-            <button 
-              className='block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-t-lg'
-              onClick={()=>{
-                // Xử lý sửa bài viết
-                setOnClickMore(false)
-              }}
+
+        {onClickMore && isMyPost && (
+          <div className="absolute top-10 right-4 bg-gray-700 text-white rounded-lg shadow-lg z-10">
+            <button
+              className="block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-t-lg"
+              onClick={() => setOnClickMore(false)}
             >
               Sửa bài viết
             </button>
-            <button 
-              className='block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-b-lg'
-              onClick={()=>{
-                setOnClickMore(false)
-                setOpenDel(true)
-                setPostId(post._id)
+            <button
+              className="block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-b-lg"
+              onClick={() => {
+                setOnClickMore(false);
+                setOpenDel(true);
+                setPostId(post._id);
               }}
             >
               Xóa bài viết
@@ -159,88 +202,84 @@ console.log("userPost", userPost);
           </div>
         )}
       </div>
-      {/* content */}
-      <div className="w-full flex flex-col gap-3">
-           {post.text && (
-        <div className="w-full">
-          <p className="text-md font-medium text-white">{post.text}</p>
-        </div>
-      )}
 
-      {/* Single media */}
-      {mediaUrl && (
-        <div  
-              onClick={() => setOpenComment(v => !v)} 
-              className="relative w-full h-[400px] flex justify-center items-center overflow-hidden rounded-lg">
-          {isVideo ? (
-            <video controls className="w-full rounded-lg">
-              <source src={mediaUrl} />
-              Trình duyệt không hỗ trợ video.
-            </video>
-          ) : (
-            <img src={mediaUrl} alt="media" className="h-full rounded-lg" />
-          )}
-        </div>
-      )}
+      {/* Content */}
+      <div className="w-full flex flex-col gap-3">
+        {post.text && (
+          <div className="w-full">
+            <p className="text-md font-medium text-white">{post.text}</p>
+          </div>
+        )}
+
+        {mediaUrl && (
+          <div
+            onClick={() => setOpenComment((v) => !v)}
+            className="relative w-full h-[400px] flex justify-center items-center overflow-hidden rounded-lg"
+          >
+            {isVideo ? (
+              <video controls className="w-full rounded-lg">
+                <source src={mediaUrl} />
+                Trình duyệt không hỗ trợ video.
+              </video>
+            ) : (
+              <img src={mediaUrl} alt="media" className="h-full rounded-lg" />
+            )}
+          </div>
+        )}
       </div>
-      {/* Caption */}
-     
 
       {/* Actions */}
-      <div className=' w-full flex flex-col'>
+      <div className="w-full flex flex-col">
         <div className="flex gap-5">
-          <HeartButton postId={post._id} size="text-xl" />
+          <HeartButton liked={liked} count={loveCount} onToggle={handleToggleLike} size="text-xl" disabled={pending} />
           <div className="flex items-center gap-1 text-gray-300">
-            <button
-              title="Bình luận"
-              className="text-gray-300 h-[20px]"
-              onClick={() => setOpenComment(v => !v)}
-            >
+            <button title="Bình luận" className="text-gray-300 h-[20px]" onClick={() => setOpenComment((v) => !v)}>
               <FaRegComment size={20} />
             </button>
             <span className="text-[20px]">{post.total_comment}</span>
           </div>
         </div>
       </div>
-{openComment && (
-  <div
-    className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center "
-    onMouseDown={(e) => {
-      const box = (e.currentTarget.querySelector("#comment-modal") as HTMLDivElement) || null;
-      if (box && !box.contains(e.target as Node)) setOpenComment(false); // click nền → đóng
-    }}
-  >
-   <div
-  id="comment-modal"
- className={`w-full bg-gray-100 dark:bg-[#181818] border border-[#3d3d3d] rounded-lg
-             h-[90vh] flex flex-col ${mediaUrl.length > 0 ? 'max-w-[1300px]' : 'max-w-[700px]'}`}
->
-  {/* Header */}
-  <div className="shrink-0 p-3 border-b border-[#3d3d3d] flex justify-between">
-    <h3 className="font-semibold">Bình luận</h3>
-    <button onClick={() => setOpenComment(false)}>Đóng</button>
-  </div>
-    <div className='w-full h-full flex justify-between gap-3 p-4 overflow-hidden'>
-      {/* Media */}
-      <div className='flex-shrink-0 w-full flex-1 flex justify-center items-center '>
-         {mediaUrl.length > 0 && (
-            isVideo ? (
-              <video controls className="w-full  rounded-lg ">
-                <source src={mediaUrl} />
-              </video>
-            ) : (
-              <img src={mediaUrl} className="h-full  rounded-lg " />
-            )
-          )}
-      </div>
- 
 
-            
-          
-  {/* VÙNG CUỘN */}
-          <div className=
-          {` flex flex-col h-full overflow-y-auto   scroll-dark ${mediaUrl.length > 0 ? 'w-[30%]' : 'w-full'}`}>
-               <div className="flex w-full items-center">
+      {/* Modal bình luận */}
+      {openComment && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/50 flex items-center justify-center"
+          onMouseDown={(e) => {
+            const box = (e.currentTarget.querySelector('#comment-modal') as HTMLDivElement) || null;
+            if (box && !box.contains(e.target as Node)) setOpenComment(false);
+          }}
+        >
+          <div
+            id="comment-modal"
+            className={`w-full bg-gray-100 dark:bg-[#181818] border border-[#3d3d3d] rounded-lg h-[90vh] flex flex-col ${
+              mediaUrl && mediaUrl.length > 0 ? 'max-w-[1300px]' : 'max-w-[700px]'
+            }`}
+          >
+            <div className="shrink-0 p-3 border-b border-[#3d3d3d] flex justify-between">
+              <h3 className="font-semibold">Bình luận</h3>
+              <button onClick={() => setOpenComment(false)}>Đóng</button>
+            </div>
+
+            <div className="w-full h-full flex justify-between gap-3 p-4 overflow-hidden">
+              {/* Media */}
+              <div className="flex-shrink-0 w-full flex-1 flex justify-center items-center">
+                {mediaUrl && mediaUrl.length > 0 && (isVideo ? (
+                  <video controls className="w-full rounded-lg">
+                    <source src={mediaUrl} />
+                  </video>
+                ) : (
+                  <img src={mediaUrl} className="h-full rounded-lg" />
+                ))}
+              </div>
+
+              {/* Vùng scroll */}
+              <div
+                className={`flex flex-col h-full  ${
+                  mediaUrl && mediaUrl.length > 0 ? 'w-[30%]' : 'w-full'
+                }`}
+              >
+                <div className="flex w-full items-center">
                   <img
                     src={post.avatar || 'https://i.pravatar.cc/150?img=1'}
                     alt="avatar"
@@ -256,70 +295,66 @@ console.log("userPost", userPost);
                     <AiOutlineMore size={20} />
                   </div>
                 </div>
-              {post.text && (
-                <div className="w-full py-4 border-b border-[#3d3d3d]">
-                  <p className="text-md font-medium text-white">{post.text}</p>
+
+                {post.text && (
+                  <div className="w-full py-4 border-b border-[#3d3d3d]">
+                    <p className="text-md font-medium text-white">{post.text}</p>
+                  </div>
+                )}
+
+                <div className="w-full flex flex-col">
+                  <div className="flex gap-5">
+                    <HeartButton
+                      liked={liked}
+                      count={loveCount}
+                      onToggle={handleToggleLike}
+                      size="text-xl"
+                      disabled={pending}
+                    />
+                    <div className="flex items-center gap-1 text-gray-300">
+                      <button title="Bình luận" className="text-gray-300 h-[20px]">
+                        <FaRegComment size={20} />
+                      </button>
+                      <span className="text-[20px]">{post.total_comment}</span>
+                    </div>
+                  </div>
                 </div>
-              )}
-                  <div className=' w-full flex flex-col'>
-              <div className="flex gap-5">
-                <HeartButton postId={post._id} size="text-xl" />
-                <div className="flex items-center gap-1 text-gray-300">
-                  <button
-                    title="Bình luận"
-                    className="text-gray-300 h-[20px]"
-                    
-                  >
-                    <FaRegComment size={20} />
-                  </button>
-                  <span className="text-[20px]">{post.total_comment}</span>
+
+                <div className="h-full overflow-y-auto scroll-dark">
+                  {isFetching ? (
+                    <div className="text-white p-5">Đang tải bình luận...</div>
+                  ) : error ? (
+                    <div className="text-red-400 p-5">Lỗi tải bình luận</div>
+                  ) : comments.length > 0 ? (
+                    <CommentList postId={post._id} comments={comments} onReply={handleReply} />
+                  ) : (
+                    <div className="text-white p-5">Chưa có bình luận nào</div>
+                  )}
                 </div>
+
+                <CreateComment post_id={post._id} isActive={openComment} />
               </div>
             </div>
-            
-              <div className='h-full'>
-         {isFetching ? (
-            <div className="text-white p-5">Đang tải bình luận...</div>
-          ) : error ? (
-            <div className="text-red-400 p-5">Lỗi tải bình luận</div>
-          ) : comments.length > 0 ? (
-              <CommentList
-                    postId={post._id}
-                    comments={comments}
-                    onReply={handleReply}    
-                  />          
-          ) : (
-            <div className="text-white p-5">Chưa có bình luận nào</div>
-          )}
-
-              </div>
-              {/* CreateComment là con của vùng scroll để sticky hoạt động */}
-              <CreateComment post_id={post._id} isActive={openComment} />
           </div>
-  </div>
-</div>
+        </div>
+      )}
 
-  </div>
-)}
-    <DeleteConfirmModal
-  open={openDel}
-  loading={deleting}
-  onClose={() => setOpenDel(false)}
-  onConfirm={async () => {
-    try {
-      setDeleting(true);
-      await deletePostByUser({"user_id":currentUserId,"post_id":postid},dispatch)
-      await getlistPost(dispatch)
-      await  getPostValidById(currentUserId as string,dispatch)
-      setOpenDel(false);
-      
-    } finally {
-      setDeleting(false);
-    }
-  }}
-/>
-
+      <DeleteConfirmModal
+        open={openDel}
+        loading={deleting}
+        onClose={() => setOpenDel(false)}
+        onConfirm={async () => {
+          try {
+            setDeleting(true);
+            await deletePostByUser({ user_id: currentUserId, post_id: postid }, dispatch);
+            await getlistPost(dispatch);
+            await getPostValidById(currentUserId as string, dispatch);
+            setOpenDel(false);
+          } finally {
+            setDeleting(false);
+          }
+        }}
+      />
     </div>
-    
   );
 }
