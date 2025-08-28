@@ -32,7 +32,6 @@ class Middleware:
         if not token:
             return JsonResponse({"success": False, "message": "Thiếu token"}, status=401)
         decode = decode_token(token) 
-        print(decode)
         if decode.get('error'):
              return JsonResponse({"success": False, "message": decode['error']}, status=401)
         if not decode.get('role'):  

@@ -1,6 +1,9 @@
 from utils.mogodbConnet import mongo
 from bson import ObjectId
 from datetime import datetime
+from notifications.services import NotificationsService
+
+notification_service = NotificationsService()
 
 class collection:
     def __init__(self):
@@ -40,9 +43,34 @@ class CommentsService(collection):
                         "parent_id" : data.get('parent_id'),
                         "interact": data.get('interact'),
             }
-            data = self.comment_collection.insert_one(comment)          
-            comment['_id'] = str(data.inserted_id)
-            self.post_collection.update_one({"_id": ObjectId(post_id)}, {"$inc": {"total_comment": 1}}) 
+            dataComent = self.comment_collection.insert_one(comment)        
+            comment['_id'] = str(dataComent.inserted_id)
+            if data.get('parent_id'):
+                parent_comment = self.comment_collection.find_one({'_id': ObjectId(data.get('parent_id'))})
+                if parent_comment:
+                    notification_service.create_notification({
+                        "user_id": parent_comment["user_id"],
+                        "actor_id": data.get('user_id'),
+                        "type": "reply",
+                        "resource_type": "comment",
+                        "resource_id": str(parent_comment["_id"]),
+                        "message": f"{user_data['last_name']} {user_data['first_name']} đã trả lời bình luận của bạn."
+                    })
+            print("postdata",post_data)
+            hhh = notification_service.create_notification({
+                    "user_id": post_data["user_id"],
+                    "actor_id": data.get('user_id'),
+                    "type": "comment",
+                    "resource_type": "post",
+                    "resource_id": post_id,
+                    "message": f"{user_data['last_name']} {user_data['first_name']} đã bình luận về bài viết của bạn."
+                })
+            print("hhhh",hhh)
+            print("comment",comment)
+            print('data',data)
+            self.post_collection.update_one({"_id": ObjectId(post_id)}, {"$inc": {"total_comment": 1}})      
+               
+            
             return {"success":True,"message":"bình luận thành công","data":comment}  
                                  
         except Exception as e:

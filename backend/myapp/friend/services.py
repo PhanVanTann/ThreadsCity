@@ -1,6 +1,9 @@
 from utils.mogodbConnet import mongo
 from bson import ObjectId
 from datetime import datetime
+from notifications.services import NotificationsService
+
+notification_service = NotificationsService()
 
 class collection:
     def __init__(self):
@@ -21,7 +24,10 @@ class FriendService(collection):
         try:
             if follower_id == followee_id:
                 return {"success": False, "message": "Không thể follow chính mình"}
-
+            user = self.user_collection.find_one({'_id': ObjectId(follower_id)})
+            followee = self.user_collection.find_one({'_id': ObjectId(followee_id)})
+            if not user and not followee:
+                return {"success":False,"message":"user không tồn tại"}
             exists = self.friend_collection.find_one({
                 'follower_id': follower_id,
                 'followee_id': followee_id
@@ -41,13 +47,30 @@ class FriendService(collection):
                     'followee_id': followee_id,
                     'created_at': datetime.now()
                 })
-
+                
             
                 is_friend = self.friend_collection.find_one({
                     'follower_id': followee_id,
                     'followee_id': follower_id
                 }) is not None
-
+                if is_friend:
+                    notification_service.create_notification({
+                            "user_id": followee_id,
+                            "actor_id": follower_id,
+                            "type": "friend",
+                            "resource_type": "user",
+                            "resource_id": follower_id,
+                            "message": f"Bạn và {user['last_name']} {user['first_name']} đã trở thành bạn bè."
+                    })
+                else:
+                    notification_service.create_notification({
+                            "user_id": followee_id,
+                            "actor_id": follower_id,
+                            "type": "follow",
+                            "resource_type": "user",
+                            "resource_id": follower_id,
+                            "message": f"{user['last_name']} {user['first_name']} đã theo dõi bạn."
+                    })
                 return {
                     "success": True,
                     "message": "Follow thành công",

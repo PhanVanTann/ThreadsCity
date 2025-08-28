@@ -6,6 +6,12 @@ export type WSOptions = {
   onClose?: (ev: CloseEvent) => void;
   onError?: (ev: Event) => void;
 };
+export type NotificationWSOptions = {
+  onMessage: (data: any) => void;
+  onOpen?: () => void;
+  onClose?: (ev: CloseEvent) => void;
+  onError?: (ev: Event) => void;
+};
 
 export function connectChatWS({
   roomId,
@@ -43,6 +49,40 @@ export function connectChatWS({
         ws.send(JSON.stringify(payload));
       }
     },
+    close: () => ws.close(),
+    raw: ws,
+  };
+}
+
+export function connectNotificationWS({
+  onMessage,
+  onOpen,
+  onClose,
+  onError,
+}: NotificationWSOptions) {
+  const url =
+    (location.protocol === "https:" ? "wss://" : "ws://") +
+    `localhost:8000/ws/notifications/`;
+
+  let ws = new WebSocket(url);
+  console.log(ws)
+
+  ws.onopen = () => {
+    onOpen?.();
+
+  };
+
+  ws.onmessage = (ev) => {
+    try {
+      const data = JSON.parse(ev.data);
+      onMessage(data);
+    } catch {}
+  };
+
+  ws.onclose = (ev) => onClose?.(ev);
+  ws.onerror = (ev) => onError?.(ev);
+
+  return {
     close: () => ws.close(),
     raw: ws,
   };
