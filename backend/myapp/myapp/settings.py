@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'post',
     'chat',
     'friend',
+    "notifications"
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "Middleware.middleware.Middleware"
     
 ]
 
@@ -157,14 +159,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = False  # KHÔNG dùng True nếu set CORS_ALLOWED_ORIGINS
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # frontend hoặc postman
+    "http://localhost:3000", 
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
+CSRF_COOKIE_SECURE = True 
+SESSION_COOKIE_SECURE = True
 
 cloudinary.config(
     cloud_name=CLOUD_NAME,
     api_key=API_KEY,
     api_secret=API_SECRET
 )
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+    }
+}

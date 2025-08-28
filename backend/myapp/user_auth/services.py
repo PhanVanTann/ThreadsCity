@@ -83,7 +83,7 @@ class LoginService(collection):
     def login(self, email, password):
         try:
             user = self.user_collection.find_one({"email": email})
-            if user.get("is_google_account", True):
+            if user.get("is_google_account", True) and not user.get("password"):
                 return {"success": False, "message": "Please login with Google account."}
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
                 if not user.get("is_verified", False):
@@ -184,3 +184,17 @@ class GoogoleService(collection):
         except Exception as e:
             print(f"Error creating user: {e}")
             return {"success": False, "message": "Error creating user."}
+class AuthServicer(collection):
+    def refreshToken(self,refresh_token):
+        try:
+                decode_ref = decode_token(refresh_token)
+                if decode_ref.get('error'):
+                    return {"success":False,"error":decode_ref['error']}
+                secction = self.session_collection.find_one({"user_id":decode_ref["user_id"],"Refresh_Token":refresh_token})
+                if not secction:
+                    return {"success":False,"message":"Khoong tìm thấy phiên đăng nhập"}
+                new_access =create_access_token(decode_ref.get('user_id'),decode_ref.get('role'))
+                self.session_collection.update_one({"user_id":decode_ref["user_id"],"Refresh_Token":refresh_token},{"$set":{"Access_Token":new_access,"Created_at":datetime.utcnow()}})
+                return {"success":True,"message":"refresh token thành công!","new_accessToken":new_access}
+        except Exception as e:
+            print(e)

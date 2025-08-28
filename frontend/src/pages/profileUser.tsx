@@ -8,6 +8,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getPostValidById } from 'src/redux/api/apiRequestPost';
 import ProfileEditModal from 'src/components/ProfileEditModal';
 import { ProfileSkeleton } from 'src/components/ProfileSkeleton';
+import toast from 'react-hot-toast';
 
 export default function ProfileUser() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
@@ -108,7 +109,12 @@ export default function ProfileUser() {
   const handleSubmitEdit = async (data: FormData) => {
     if (!currentUserId) return;
     await updateUser(currentUserId, data, dispatch);
+    toast.success("Cập nhật thành công")
+    await getUserById(currentUserId,dispatch)
+    
+    await getPostValidById(currentUserId,dispatch)
     setOpenEdit(false);
+
   };
 
   useEffect(() => {
