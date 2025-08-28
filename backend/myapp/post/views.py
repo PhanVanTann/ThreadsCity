@@ -34,3 +34,9 @@ class MyPostValid(APIView):
         user_id = request.GET.get("user_id")
         result = censorship_service.getPostValidByUser(user_id)
         return JsonResponse(result, status=200) 
+class HeartView(APIView):
+    def post(self,request):
+        user_id = request.data.get("user_id")
+        post_id = request.data.get("post_id")
+        result = censorship_service.heartPost(user_id,post_id)
+        return JsonResponse(result,status=200)
