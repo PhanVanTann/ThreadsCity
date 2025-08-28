@@ -14,7 +14,31 @@ import Loading from './components/loading'
 import Register from './auth/register'
 import {Toaster} from 'react-hot-toast'
 import LoadingPost from './pages/loadingPost/LoadingPost'
+import { useEffect } from "react";
+import { addNotificationRealtime } from './redux/slice/notificationSlice'
+import { connectNotificationWS } from "./lib/sw";
+import { useDispatch, useSelector } from "react-redux";
+
+
+
 function App() {
+  const currentUser = useSelector((s: any) => s.auth.login.currentUser);
+   const dispatch = useDispatch();
+   useEffect(() => {
+    if (!currentUser) return;
+
+    const ws = connectNotificationWS({
+      onMessage: (data) => {
+        console.log("Notification:", data);
+        dispatch(addNotificationRealtime(data));
+        
+      },
+      onError: (e) => console.log("WS error", e),
+      onClose: () => console.log("WS closed"),
+    });
+
+    return () => ws.close();
+  }, [currentUser]);
   return (
     <Suspense fallback={<Loading />}>
       

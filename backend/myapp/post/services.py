@@ -5,8 +5,9 @@ from utils.mogodbConnet import mongo
 from django.conf import settings
 from bson import ObjectId
 from concurrent.futures import ThreadPoolExecutor
+from notifications.services import NotificationsService
 
-
+notification_service = NotificationsService()
 
 class collection:
     def __init__(self):
@@ -226,6 +227,9 @@ class CensorshipService(collection):
             postData = self.post_collection.find_one({'_id':ObjectId(post_id)})
             if not postData:
                 return {"success":False,"message":"không tìm thấy bài đăng"}
+            userData = self.user_collection.find_one({'_id':ObjectId(user_id)})
+            if not userData:
+                return {"success":False,"message":"không tìm thấy user"}
             if user_id in postData.get("list_user_heart",[]):
                 self.post_collection.update_one({'_id':ObjectId(post_id)},{
                     "$inc":{"total_love":-1},
@@ -237,6 +241,14 @@ class CensorshipService(collection):
                     "$inc":{"total_love":1},
                     "$push":{"list_user_heart":user_id}
                 })
+                notification_service.create_notification({
+                        "user_id": postData["user_id"],
+                        "actor_id": user_id,
+                        "type": "like",
+                        "resource_type": "post",
+                        "resource_id": post_id,
+                        "message": f"{userData['last_name']} {userData['first_name']} đã thích bài viết của bạn."
+                    })
                 return {"success":True,"message":"thích thành công"}
         except Exception as e:
             return {"success": False, "error": str(e)} 
