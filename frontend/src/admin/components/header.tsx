@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BiLogOut } from "react-icons/bi";
 import { useNavigate, useLocation } from "react-router";
+import Logout from "src/auth/logout";
 
 export default function ADHeader() {
   const navigate = useNavigate();
@@ -40,11 +41,12 @@ const handleNavigate = (index: number) => {
 
       <button
         className="w-[40px] h-[40px] p-1 rounded-full cursor-pointer hover:bg-[#e3e5e6]"
-        onClick={() => navigate("/auth/login")} // tùy flow của bạn
+       // tùy flow của bạn
         aria-label="Đăng xuất"
         title="Đăng xuất"
       >
         <BiLogOut size={24} />
+        <Logout/>
       </button>
     </div>
   );

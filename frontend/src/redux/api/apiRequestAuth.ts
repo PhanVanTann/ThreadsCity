@@ -44,7 +44,9 @@ export const logoutUser = async (dispatch: any, navigate: any) => {
       success: "Đăng xuất thành công!",
       error: "Đăng xuất thất bại!",
     });
-    await p;
+ 
+    const res= await p;
+    console.log('logout res',res.data)
     dispatch(logoutSuccess());
     navigate("/login");
   } catch (err: any) {
