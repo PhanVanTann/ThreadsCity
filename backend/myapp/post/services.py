@@ -221,3 +221,22 @@ class CensorshipService(collection):
             
         except Exception as e:
             return {"success": False, "error": str(e)} 
+    def heartPost(self,user_id,post_id):
+        try:
+            postData = self.post_collection.find_one({'_id':ObjectId(post_id)})
+            if not postData:
+                return {"success":False,"message":"không tìm thấy bài đăng"}
+            if user_id in postData.get("list_user_heart",[]):
+                self.post_collection.update_one({'_id':ObjectId(post_id)},{
+                    "$inc":{"total_love":-1},
+                    "$pull":{"list_user_heart":user_id}
+                })
+                return {"success":True,"message":"bỏ thích thành công"}
+            else:
+                self.post_collection.update_one({'_id':ObjectId(post_id)},{
+                    "$inc":{"total_love":1},
+                    "$push":{"list_user_heart":user_id}
+                })
+                return {"success":True,"message":"thích thành công"}
+        except Exception as e:
+            return {"success": False, "error": str(e)} 

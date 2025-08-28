@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'post',
     'chat',
     'friend',
+    "notifications"
 ]
 
 MIDDLEWARE = [
@@ -170,3 +171,9 @@ cloudinary.config(
     api_key=API_KEY,
     api_secret=API_SECRET
 )
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+    }
+}
