@@ -80,7 +80,7 @@ class UserService(collectionUser):
     def getListUser(self, user_id: str):
         try:
             cursor = self.collection_users.find(
-                {},
+                {"role":"user"},
                 {"_id": 1, "email": 1, "first_name": 1, "last_name": 1, "role": 1, "avatar": 1}
             )
 
