@@ -26,13 +26,10 @@ const navigate = useNavigate()
   const [files, setFiles] = useState<File[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false); // <-- NEW
+  const [submitting, setSubmitting] = useState(false); 
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // form "bẩn"?
   const isDirty = content.trim().length > 0 || files.length > 0;
-
-  // modal confirm
   const [confirmOpen, setConfirmOpen] = useState(false);
   const requestClose = () => (isDirty ? setConfirmOpen(true) : onClose());
   const cancelClose  = () => setConfirmOpen(false);

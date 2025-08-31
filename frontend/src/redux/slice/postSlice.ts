@@ -1,14 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { tr } from "framer-motion/client";
+type Post = any;
 
 const postSlice = createSlice({
     name:"post",
     initialState:{
         getListPost:{
-            data:null,
+            data:[] as Post[],
+            nextCursor: null,
             isFetching: false,
             error: false,
             success: false,
+            done: false, 
         },
         createPost:
         {
@@ -34,23 +36,55 @@ const postSlice = createSlice({
             isFetching: false,
             error: false,
             success: false,
-        }
+        },
+        getPostById:{
+            data:null,
+            isFetching: false,
+            error: false,
+            success: false,
+        },
     },
     reducers:{
         getListPostStart:(state) => {
-            state.getListPost.data=null;
             state.getListPost.isFetching = true;
             state.getListPost.error= false;
             state.getListPost.success= false;
         },
-        getListPostSuccess:(state,action) => {
-            state.getListPost.data=action.payload;
+        resetListPost: (state) => {
+            state.getListPost.data = [];
+            state.getListPost.nextCursor = null;
+            state.getListPost.done = false;
             state.getListPost.isFetching = false;
-            state.getListPost.error= false;
-            state.getListPost.success= true;
-        },
+            state.getListPost.error = false;
+            state.getListPost.success = false;
+            },
+        getListPostSuccess: (state, action) => {
+            const incoming = Array.isArray(action.payload?.data) ? action.payload.data : [];
+            const list = state.getListPost.data;
+            const ids = new Set(list.map((x:any)=>x._id));
+            for (const it of incoming) if (!ids.has(it._id)) list.push(it);
+            let next = action.payload?.nextCursor ?? null;
+
+            if (!next && incoming.length > 0) {
+                const last = incoming[incoming.length - 1];
+                next = last?.created_at
+                ? new Date(last.created_at).toISOString()
+                : (last?._id ?? null);
+            }
+            if (next === state.getListPost.nextCursor) {
+                state.getListPost.done = true;
+            }
+
+            state.getListPost.nextCursor = next;
+            state.getListPost.isFetching = false;
+            state.getListPost.error = false;
+            state.getListPost.success = true;
+
+            // Hết dữ liệu nếu batch rỗng hoặc next null
+            if (incoming.length === 0 || next == null) state.getListPost.done = true;
+            },
         getListPostFailure:(state) => {
-            state.getListPost.data=null;
+            state.getListPost.data=[];
             state.getListPost.isFetching = false;
             state.getListPost.error= true;
             state.getListPost.success= false;
@@ -130,6 +164,24 @@ const postSlice = createSlice({
             state.getHeartbyPostId.error= true;
             state.getHeartbyPostId.success= false;
         },
+        getPostByIdStart:(state) => {
+            state.getPostById.data=null;
+            state.getPostById.isFetching = true;
+            state.getPostById.error= false;
+            state.getPostById.success= false;
+        },
+        getPostByIdSuccess:(state,action) => {
+            state.getPostById.data=action.payload;
+            state.getPostById.isFetching = false;
+            state.getPostById.error= false;
+            state.getPostById.success= true;
+        },
+        getPostByIdFailure:(state) => {
+            state.getPostById.data=null;
+            state.getPostById.isFetching = false;
+            state.getPostById.error= true;
+            state.getPostById.success= false;   
+        }
     }
 })
 
@@ -149,5 +201,9 @@ export const {
    getHeartbyPostIdFailure,
    getHeartbyPostIdStart,
    getHeartbyPostIdSuccess,
+    getPostByIdFailure,
+    getPostByIdStart,
+    getPostByIdSuccess,
+    resetListPost
 } = postSlice.actions;
 export default postSlice.reducer;

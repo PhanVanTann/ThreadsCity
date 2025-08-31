@@ -21,7 +21,9 @@ class CensorshipView(APIView):
             return JsonResponse({"error": result['error']}, status=500)
     
     def get(self,request):
-        result  = censorship_service.get_listpost()
+        limit = int(request.GET.get("limit", 10))
+        cursor = request.GET.get("cursor", None) 
+        result  = censorship_service.get_listpost(limit,cursor)
         return JsonResponse(result, status=200)
     def delete(self,request):
         post_id = request.GET.get('post_id')
@@ -39,4 +41,10 @@ class HeartView(APIView):
         user_id = request.data.get("user_id")
         post_id = request.data.get("post_id")
         result = censorship_service.heartPost(user_id,post_id)
+        return JsonResponse(result,status=200)
+
+class getPostById(APIView):
+    def get(self,request):
+        post_id = request.GET.get("post_id")
+        result = censorship_service.getPostById(post_id)
         return JsonResponse(result,status=200)

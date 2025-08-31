@@ -51,7 +51,7 @@ function App() {
           <Route path='/search' element={<Search />} />
           <Route path='/notifications' element={<Notifications />} />
           <Route path='/loadingpost' element={<LoadingPost />} />
-          <Route path='/postcomment/:userId' element={<PostComment />} />
+          <Route path='/postcomment/:post_id' element={<PostComment />} />
 
           </Route>
         </Route>

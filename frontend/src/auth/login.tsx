@@ -1,11 +1,14 @@
 
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import { FaGoogle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { NavLink } from "react-router";
 import { useNavigate } from "react-router";
 import { loginByGoogle, loginUser } from "../redux/api/apiRequestAuth";
 import { GoogleLogin } from "@react-oauth/google";
+import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+
 
 // import { useAuth } from "../../context/authContext";
 export default function Login() {
@@ -19,7 +22,12 @@ export default function Login() {
     email: "",
     password: "",
   });
-  
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("isVerified") === "true") {
+      toast.success("Tài khoản đã được xác thực! Vui lòng đăng nhập.");
+    }
+  }, []);
    function validate() {
     const newErrors: { [key: string]: string } = {};
     if (!form.email) newErrors.email = "Email không được để trống";

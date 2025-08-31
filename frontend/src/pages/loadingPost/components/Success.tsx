@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 const Success = () => {
   const navigate = useNavigate()
   const handleClick = () => {
-    navigate('/')
+    window.location.href = "/";
   }
   return (
     <>
