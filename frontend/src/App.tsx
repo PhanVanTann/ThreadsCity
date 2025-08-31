@@ -19,9 +19,9 @@ import { useEffect } from "react";
 import { addNotificationRealtime } from './redux/slice/notificationSlice'
 import { connectNotificationWS } from "./lib/sw";
 import { useDispatch, useSelector } from "react-redux";
-import { ModerationProvider } from './admin/moderation-store'
 import PendingModerationPage from './admin/PendingModerationPage'
 import ApprovedPostsPage from './admin/ApprovedPostsPage'
+import NotApprovedPostsPage from './admin/NotApprovedPostsPage'
 
 
 
@@ -43,7 +43,6 @@ function App() {
     return () => ws.close();
   }, [currentUser]);
   return (
-    <ModerationProvider>
     <Suspense fallback={<Loading />}>
       
       <Routes>
@@ -69,13 +68,13 @@ function App() {
          
             <Route path="/moderation/pending" element={<PendingModerationPage />} />
             <Route path="/moderation/approved" element={<ApprovedPostsPage />} />
+            <Route path="/moderation/not-approved" element={<NotApprovedPostsPage />} /> 
        </Route>
       </Route>
         {/* <Route path='*' element={<NotFound />} /> */}
       </Routes>
       
     </Suspense>
-    </ModerationProvider>
   )
 }
 
