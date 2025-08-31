@@ -78,7 +78,6 @@ export const createFollowUser = async (data: any,dispatch: any) => {
     dispatch(createFollowUserStart())
     try {
         const res = await axiosInstance.post(`/friend/`, data);
-        console.log('datafolowers', res.data)
         dispatch(createFollowUserSuccess(res.data));
     } catch (error) {
         console.error("Login failed:", error);
@@ -96,7 +95,6 @@ export const isFriendUser = async (data: any,dispatch: any) => {
                 "follower_id":data.follower_id
             }
         });
-        console.log('hiiiii', res.data)
         dispatch(isFriendUserSuccess(res.data));
         
     } catch (error) {

@@ -74,7 +74,6 @@ export const getPostValidById = async (user_id:string,dispatch:any) => {
 export const deletePostByUser = async (data:any,dispatch:any) => {
     dispatch(deletePostByUserStart())
     try {
-        console.log(data,"pppppp")
         const p =  axiosInstance.delete(`/post/`,{
             params:{
                 "user_id":data.user_id,

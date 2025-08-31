@@ -65,9 +65,7 @@ export const getHistoryChatReceiver = async(data:any,dispatch:any)=>{
 export const createMessage = async (data: any,dispatch: any) => {
     dispatch(createMessageStart())
     try {
-        console.log("dattamau",data)
         const res = await axiosInstance.post(`/chat/message/`, data);
-        console.log('datas', res.data)
         dispatch(createMessageSuccess(res.data));
     } catch (error) {
         console.error("error:", error);

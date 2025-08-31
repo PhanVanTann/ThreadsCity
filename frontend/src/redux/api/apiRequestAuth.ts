@@ -27,7 +27,10 @@ export const loginUser = async (user: any, dispatch: any, navigate: any) => {
     });
     const res = await p;
     dispatch(loginSuccess(res.data));
-    navigate("/");
+    if (res.data.role === "admin") {
+      navigate("/dashboard");
+    }else {
+    navigate("/");}
   } catch (err: any) {
     console.error("Login failed:", err);
     dispatch(loginFailure());
@@ -46,8 +49,8 @@ export const logoutUser = async (dispatch: any, navigate: any) => {
     });
  
     const res= await p;
-    console.log('logout res',res.data)
     dispatch(logoutSuccess());
+    console.log("logout res", res);
     navigate("/login");
   } catch (err: any) {
     console.error("Logout failed:", err);
@@ -87,7 +90,16 @@ export const loginByGoogle = async (
     });
     const result = await res
     dispatch(loginSuccess(result.data));
-    navigate("/");
+    console.log("login gg", result);
+    if(result.data.role === "admin") {
+      navigate("/dashboard");
+    }
+
+    else { 
+      navigate("/")
+    }
+    
+   
   } catch (err: any) {
     console.error("Google login failed:", err);
     dispatch(loginFailure());
