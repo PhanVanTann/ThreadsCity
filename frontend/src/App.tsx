@@ -5,6 +5,7 @@ import Home from './pages/home'
 import Profile from './pages/profileUser'
 import DefaultLayout from '../src/pages/layout'
 import Search from './pages/search'
+import PostComment from './pages/postcomment'
 import Notifications from './pages/notifications'
 import AdmintLayout from './admin/layout'
 import ProtectedRoute from './middleware/protectedRouteProps'
@@ -51,6 +52,7 @@ function App() {
           <Route path='/search' element={<Search />} />
           <Route path='/notifications' element={<Notifications />} />
           <Route path='/loadingpost' element={<LoadingPost />} />
+          <Route path='/postcomment/:userId' element={<PostComment />} />
 
           </Route>
         </Route>
