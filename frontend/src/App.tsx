@@ -9,8 +9,8 @@ import PostComment from './pages/postcomment'
 import Notifications from './pages/notifications'
 import AdmintLayout from './admin/layout'
 import ProtectedRoute from './middleware/protectedRouteProps'
-import PostProcessing from './admin/postprocessing'
-import DashBoard from './admin/dashboard'
+import PostProcessing from './admin/ApprovedPostsPage'
+import DashBoard from './admin/PendingModerationPage'
 import Loading from './components/loading'
 import Register from './auth/register'
 import {Toaster} from 'react-hot-toast'
@@ -19,6 +19,9 @@ import { useEffect } from "react";
 import { addNotificationRealtime } from './redux/slice/notificationSlice'
 import { connectNotificationWS } from "./lib/sw";
 import { useDispatch, useSelector } from "react-redux";
+import { ModerationProvider } from './admin/moderation-store'
+import PendingModerationPage from './admin/PendingModerationPage'
+import ApprovedPostsPage from './admin/ApprovedPostsPage'
 
 
 
@@ -40,6 +43,7 @@ function App() {
     return () => ws.close();
   }, [currentUser]);
   return (
+    <ModerationProvider>
     <Suspense fallback={<Loading />}>
       
       <Routes>
@@ -59,18 +63,19 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
 
+    
  <Route element={<ProtectedRoute allowedRoles={['admin']}/>} >
        <Route element={<AdmintLayout />}>
-        <Route path='/dashboard' element={<DashBoard />} />
-        <Route path='/postprocessing' element={<PostProcessing />} />
-
-
+         
+            <Route path="/moderation/pending" element={<PendingModerationPage />} />
+            <Route path="/moderation/approved" element={<ApprovedPostsPage />} />
        </Route>
       </Route>
         {/* <Route path='*' element={<NotFound />} /> */}
       </Routes>
+      
     </Suspense>
-    
+    </ModerationProvider>
   )
 }
 

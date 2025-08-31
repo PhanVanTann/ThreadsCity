@@ -139,7 +139,7 @@ export default function Sidebar() {
             <ul className="p-2">  
               <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer">Cài đặt</li>
               <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer">Trợ giúp</li>          
-              <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer"><Logout/>aaaaa  </li>
+              <li className="px-4 py-2 hover:bg-[#3d3d3d] cursor-pointer"><Logout/> </li>
             </ul>
           </div>
         )}
