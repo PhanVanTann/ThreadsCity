@@ -21,8 +21,7 @@ export default function Home() {
   }, []);
   return (
      <>
-      {isLoading ? <PostSkeleton /> 
-      :
+     
         <div className="w-[700px] flex flex-col items-center mt-5 h-screen bg-gray-100 dark:bg-[#000] ">
         <div onClick={handleOpenPost} className="w-full dark:bg-[#181818] border border-[#3d3d3d] flex justify-between items-center p-3 text-white rounded-lg cursor-pointer  transition-colors">
            <img
@@ -33,9 +32,13 @@ export default function Home() {
           <span className="text-lg font-semibold">Tạo bài viết mới</span>
           <div className='w-[40px]'></div>
         </div>
+        
         <Postmodel open={openPost} onClose={() => setOpenPost(false)} />
+           {isLoading ? <PostSkeleton /> 
+      :
         <PostList />
-    </div>}
+           }
+    </div>
     </>
    
   );
