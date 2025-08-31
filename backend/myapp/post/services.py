@@ -14,6 +14,7 @@ class collection:
         self.post_collection = mongo.get_collection('posts')
         self.censorship_collection = mongo.get_collection('censorships')
         self.user_collection = mongo.get_collection('users')
+        self.notifications_collection = mongo.get_collection('notifications')
     def get_post_collection(self):
         return self.post_collection
     def get_censorship_collection(self):
@@ -235,6 +236,15 @@ class CensorshipService(collection):
                     "$inc":{"total_love":-1},
                     "$pull":{"list_user_heart":user_id}
                 })
+                dele = self.notifications_collection.delete_one({
+                    "user_id": ObjectId(postData["user_id"]),
+                    "actor.actor_id": user_id,
+                    "type": "like",
+                    "resource_type": "post",
+                    "resource_id": ObjectId(post_id),
+                })
+                if dele.deleted_count > 0:
+                    print("dele",dele)
                 return {"success":True,"message":"bỏ thích thành công"}
             else:
                 self.post_collection.update_one({'_id':ObjectId(post_id)},{
