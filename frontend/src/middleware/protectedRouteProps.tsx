@@ -17,7 +17,7 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
 
   console.log("User role:", userRole);
  if(!userRole) {
-    toast.error('Bạn vui lòng đăng nhập!')
+    // toast.error('Bạn vui lòng đăng nhập!')
     return <Navigate to="/login" replace />;
   }
   if (!allowedRoles.includes(userRole !== null ? userRole : "")) {

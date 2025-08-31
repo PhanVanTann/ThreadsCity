@@ -28,7 +28,7 @@ export const loginUser = async (user: any, dispatch: any, navigate: any) => {
     const res = await p;
     dispatch(loginSuccess(res.data));
     if (res.data.role === "admin") {
-      navigate("/dashboard");
+      navigate("/moderation/pending");
     }else {
     navigate("/");}
   } catch (err: any) {
@@ -99,7 +99,7 @@ export const loginByGoogle = async (
     dispatch(loginSuccess(result.data));
     console.log("login gg", result);
     if(result.data.role === "admin") {
-      navigate("/dashboard");
+      navigate("/moderation/pending");
     }
 
     else { 

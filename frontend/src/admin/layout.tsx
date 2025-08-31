@@ -1,24 +1,25 @@
-import { Outlet } from "react-router-dom";
-import Header from "./components/header";
+// layout.tsx (dashboard layout)
 
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import TableSkeleton from './components/TableSkeleton';
+import BlockSkeleton from './components/BlockSkeleton';
+export default function DashBoardLayout() {
+  // ví dụ: nếu bạn muốn hiển thị skeleton ở layout
+  const showingSkeleton = false; // đổi theo logic của bạn
 
-export default function dashBoardLayout() {
   return (
-        <div className="relative h-screen  w-screen bg-gradient-to-br from-[#e3e5e6]   to-[#98cfe9] overflow-y">
-            <div className="w-screen flex justify-center">
-                    <Header/>
-            </div>
-            
-            <div className=" flex justify-center items-center mt-28">
-                <Outlet />
-            </div>
-                 
-        </div>
-  
-          
-         
-          
-  
- 
+    <div className="relative h-full">
+      {/* header / sidebar ... */}
+
+      <div className="w-screen flex justify-center">
+        {showingSkeleton ? (
+          <BlockSkeleton rows={6} cols={5} /> // ✅ hợp lệ trong <div>
+        ) : null}
+      </div>
+
+      {/* nội dung route con */}
+      <Outlet />
+    </div>
   );
 }
