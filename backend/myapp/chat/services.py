@@ -2,6 +2,8 @@ from utils.mogodbConnet import mongo
 from bson import ObjectId
 from datetime import datetime
 import cloudinary.uploader
+from notifications.services import NotificationsService
+notification_service = NotificationsService()
 class collection:
     def __init__(self):
         self.roomchat_conlection = mongo.get_collection('roomchats')
@@ -59,7 +61,16 @@ class MessageService(collection):
             "status":False,
             "created_at": datetime.utcnow().isoformat() + "Z"
         }
+        userData = self.user_collection.find_one({'_id':ObjectId(send_id)})
         self.message_collection.insert_one(message_doc)
+        notification_service.create_notification({
+                        "user_id": receiver_id,
+                        "actor_id": send_id,
+                        "type": "message",
+                        "resource_type": "message",
+                        "resource_id": room_id,
+                        "message": f"{userData['last_name']} {userData['first_name']} đã gửi cho bạn một tin nhắn."
+                    })
         return {"success": True, "message": "Message created"}
     def get_history_chat_byuser(self,room_id,user_id):
         try:

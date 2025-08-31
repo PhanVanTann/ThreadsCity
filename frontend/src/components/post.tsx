@@ -90,7 +90,6 @@ export default function Post({ post }: { post: Post }) {
     [currentUserId, post._id, dispatch]
   );
 
-  // Lock scroll khi mở modal comment
   useEffect(() => {
     if (!openComment) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenComment(false);
@@ -103,7 +102,7 @@ export default function Post({ post }: { post: Post }) {
     };
   }, [openComment]);
 
-  // Fetch info user của chủ bài post (cache theo post._id)
+
   useEffect(() => {
     if (post.user_id && post._id) {
       // @ts-ignore

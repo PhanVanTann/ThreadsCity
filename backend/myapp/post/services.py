@@ -148,7 +148,7 @@ class CensorshipService(collection):
                         "confidence": conf,
                         "image_url": cloud_url,
                         "status": status,
-                        "created_at": datetime.now()
+                        "created_at": datetime.utcnow()
                     })
             if censoreds:
                 self.post_collection.update_one({"_id": ObjectId(postid)},
@@ -187,16 +187,38 @@ class CensorshipService(collection):
         except Exception as e:
             return {"success": False, "message": "Error in censorship", "error": str(e)}
 
-    def get_listpost(self):
+
+
+    def get_listpost(self, limit: int = 10, cursor: str = None):
         try:
-            cursor = self.post_collection.find({"status": "valid"})
+            q = {"status": "valid"}
+
+            if cursor:
+                dt = datetime.fromisoformat(cursor.replace("Z", "+00:00"))
+                q["created_at"] = {"$lt": dt}
+            cursor_q = (self.post_collection.find(q)
+                        .sort([("created_at", -1), ("_id", -1)])
+                        .limit(limit))
+
             datas = []
-            for d in cursor:
-                d['_id'] = str(d['_id'])
+            last_created = None
+            for d in cursor_q:
+                d["_id"] = str(d["_id"])
+                if "created_at" in d and isinstance(d["created_at"], datetime):
+                    last_created = d["created_at"]
+                    d["created_at"] = d["created_at"].isoformat()
                 datas.append(d)
-            return {"success": True, "data": datas}
+
+            next_cursor = last_created.isoformat().replace("+00:00", "Z") if last_created else None
+            print("next_cursor", next_cursor)
+            return {
+                "success": True,
+                "data": datas,
+                "nextCursor": next_cursor
+            }
         except Exception as e:
-            return {"success": False, "error": str(e)} 
+            return {"success": False, "error": str(e)}
+        
     def getPostValidByUser(self,user_id):
         try:
             cursor = self.post_collection.find({"status": "valid","user_id":user_id})
@@ -251,14 +273,24 @@ class CensorshipService(collection):
                     "$inc":{"total_love":1},
                     "$push":{"list_user_heart":user_id}
                 })
-                notification_service.create_notification({
-                        "user_id": postData["user_id"],
-                        "actor_id": user_id,
-                        "type": "like",
-                        "resource_type": "post",
-                        "resource_id": post_id,
-                        "message": f"{userData['last_name']} {userData['first_name']} đã thích bài viết của bạn."
-                    })
+                if user_id != postData["user_id"]:
+                    notification_service.create_notification({
+                            "user_id": postData["user_id"],
+                            "actor_id": user_id,
+                            "type": "like",
+                            "resource_type": "post",
+                            "resource_id": post_id,
+                            "message": f"{userData['last_name']} {userData['first_name']} đã thích bài viết của bạn."
+                        })
                 return {"success":True,"message":"thích thành công"}
         except Exception as e:
             return {"success": False, "error": str(e)} 
+    def getPostById(self,post_id):
+        try:
+            postData = self.post_collection.find_one({'_id':ObjectId(post_id)})
+            if not postData:
+                return {"success":False,"message":"không tìm thấy bài đăng"}
+            postData['_id'] = str(postData['_id'])
+            return {"success":True,"data":postData}
+        except Exception as e:
+            return {"success": False, "error": str(e)}

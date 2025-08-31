@@ -12,16 +12,26 @@ import { getListPostFailure,
     deletePostByUserSuccess,
     getHeartbyPostIdStart,
     getHeartbyPostIdSuccess,
-    getHeartbyPostIdFailure
+    getHeartbyPostIdFailure,
+    getPostByIdStart,
+    getPostByIdSuccess,
+    getPostByIdFailure
 } from "../slice/postSlice"
 import axiosInstance from "../../axios/axios.interceptor";
 import toast from "react-hot-toast";
 
 
-export const getlistPost = async (dispatch:any) => {
+export const getlistPost = async (dispatch:any,cursor?: string) => {
     dispatch(getListPostStart())
     try {
-        const res = await axiosInstance.get(`/post/`);
+        const params:any = { limit: 10 };
+        if (cursor) params.cursor = cursor;
+        const res = await axiosInstance.get(`/post/`,
+            {
+            params: { limit: 10, cursor }
+            }
+        );
+        console.log("postdata",res.data)
         dispatch(getListPostSuccess(res.data));
     } catch (error) {
         console.error("failed:", error);
@@ -106,5 +116,22 @@ export const getHeartbyPostId = async (data:any ,dispatch:any) => {
         console.error("failed:", error);
 
         dispatch(getHeartbyPostIdFailure())
+    }
+}
+export const getPostById = async (post_id:string,dispatch:any) => {
+    dispatch(getPostByIdStart())
+    try {
+        const res = await axiosInstance.get(`/post/getpostbyid/`,{
+            params:{
+                post_id
+            }
+        });
+        console.log("postbyid",res.data)
+        dispatch(getPostByIdSuccess(res.data));
+        return res.data
+    } catch (error) {
+        console.error("failed:", error);
+
+        dispatch(getPostByIdFailure())
     }
 }

@@ -84,7 +84,7 @@ export default function Search() {
               
             />
             <div className="w-[530px]">
-              <span className="text-white font-bold">{user.first_name} {user.last_name}</span>
+              <span className="text-white font-bold">{user.last_name} {user.first_name}</span>
               <p className="text-gray-400 text-sm">Đề xuất cho bạn</p>
             </div>
             {user.is_friend === 'friend'&& (

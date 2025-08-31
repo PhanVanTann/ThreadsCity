@@ -38,6 +38,9 @@ export default function Notifications() {
     if (n.type === "follow") {
       navigate(`/profile/${n.actor.actor_id}`);
     }
+    else if (n.type === "post" || n.type === "comment" || n.type === "like") {
+      navigate(`/postcomment/${n.resource_id}`);
+    }
 
   };
 

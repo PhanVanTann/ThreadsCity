@@ -161,12 +161,7 @@ export default function ChatWindow({
               placeholder="Nhập tin nhắn…"
               className="flex-1 rounded-lg px-3 py-2 bg-gray-100 dark:bg-[#2b2b2b] outline-none resize-none"
               rows={1}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  sendNow();
-                }
-              }}
+             
             />
             <button type="button" onClick={sendNow} className="px-3 py-2 cursor-pointer text-white rounded-lg">
               <LuSendHorizontal size={20} />

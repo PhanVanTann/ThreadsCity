@@ -46,11 +46,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {   'type': 'chat_message',
                     'send_id': send_id,
                     'receiver_id': receiver_id,
-                    'text': message_text,
-                    
+                    'text': message_text,     
                     'media': None
                 }
             )
+            
 
     async def chat_message(self, event):
      

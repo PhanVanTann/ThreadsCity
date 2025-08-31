@@ -62,10 +62,17 @@ export const registerUser = async (user: any, dispatch: any, navigate: any) => {
   console.log(user)
   dispatch(registerStart());
   try {
-    const res = await axiosInstance.post("/users/", user);
+    const d =  axiosInstance.post("/users/", user);
+    
+    toast.promise(d, {
+      loading: "Đang đăng ký...",
+      success: "Đăng ký thành công! vui lòng kiểm tra email để xác thực tài khoản",
+      error: "Đăng ký thất bại!",
+    });
+    const res = await d
+    console.log("register res", res);
     dispatch(registerSuccess(res.data));
     navigate('/login')
-    alert(`check your email`)
   } catch (err: any) {
     console.error("Registration failed:", err);
     dispatch(registerFailure());
