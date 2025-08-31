@@ -48,3 +48,18 @@ class getPostById(APIView):
         post_id = request.GET.get("post_id")
         result = censorship_service.getPostById(post_id)
         return JsonResponse(result,status=200)
+
+class getPostAwaitingCensorship(APIView):
+    def get(self,request):
+        result  = censorship_service.getPostAwaitingCensorship()
+        return JsonResponse(result, status=200)
+class getCensorshipbyPostId(APIView):
+    def get(self,request):
+        post_id = request.GET.get("post_id")
+        result  = censorship_service.getCensorshipbyPostId(post_id)
+        return JsonResponse(result, status=200)
+    def patch(self,request):
+        post_id = request.data.get("post_id")
+        status = request.data.get("status")
+        result  = censorship_service.updateCensorshipStatus(post_id,status)
+        return JsonResponse(result, status=200)

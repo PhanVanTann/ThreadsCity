@@ -9,6 +9,7 @@ import { ImOffice } from 'react-icons/im'
 import commentReducer from './slice/commentSlice'
 import usersReducer from './slice/userSlice'
 import notificationReducer from './slice/notificationSlice'
+import adminPostReducer from './slice/adminPostSlice'
 
 const persistConfig = {
   key: 'auth',
@@ -24,7 +25,8 @@ const rootReducer = combineReducers({
   post:postReducer,
   user:usersReducer,
   comment:commentReducer,
-  notification:notificationReducer
+  notification:notificationReducer,
+  adminPost:adminPostReducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

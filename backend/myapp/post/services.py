@@ -294,3 +294,46 @@ class CensorshipService(collection):
             return {"success":True,"data":postData}
         except Exception as e:
             return {"success": False, "error": str(e)}
+    def getPostAwaitingCensorship(self):
+        try:
+            postData = self.post_collection.find({"flag": True, "status": "awaiting"})
+            datas = []
+            for d in postData:
+                d['_id'] = str(d['_id'])
+                datas.append(d)
+            return {"success": True, "data": datas}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    def getCensorshipbyPostId(self,post_id):
+        try:
+            postData = self.post_collection.find_one({'_id':ObjectId(post_id),'flag': True, 'status': 'awaiting'})
+            if not postData:
+                return {"success":False,"message":"không tìm thấy bài đăng"}
+            postData['_id'] = str(postData['_id'])
+            censorships = list(self.censorship_collection.find({'post_id':post_id}))
+            for c in censorships:
+                c['_id'] = str(c['_id'])
+                c['post_id'] = str(c['post_id'])
+            return {
+                "success":True,
+                "data":{
+                    "text":postData.get("text"),
+                    "censorships":censorships
+                }
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    def updateCensorshipStatus(self,post_id,status):
+        try:
+            if status not in ["valid","not valid"]:
+                return {"success":False,"message":"trạng thái không hợp lệ"}
+            postData = self.post_collection.find_one({'_id':ObjectId(post_id),'flag': True, 'status': 'awaiting'})
+            if not postData:
+                return {"success":False,"message":"không tìm thấy bài đăng"}
+            if status == "valid":
+                self.post_collection.update_one({'_id':ObjectId(post_id)},{'$set':{'status':status,'flag':False}})
+            else:
+                self.post_collection.update_one({'_id':ObjectId(post_id)},{'$set':{'status':status}})
+            return {"success":True,"message":"cập nhật trạng thái thành công"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
