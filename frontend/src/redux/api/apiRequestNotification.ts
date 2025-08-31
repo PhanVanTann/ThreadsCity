@@ -21,7 +21,6 @@ export const getListNotification = async (user_id: string, dispatch: any) => {
         }
     });
     const res = await p;
-    console.log('datas',res.data);
     dispatch(getListNotificationSuccess(res.data.data));
   } catch (err: any) {
     console.error("failed:", err);
@@ -33,7 +32,6 @@ export const markAsReadNotification = async (data: any, dispatch: any) => {
   try {
  
     const p =  axiosInstance.patch(`/notifications/`,data);
-    console.log('datas',p); 
     const res = await p;
     dispatch(markAsReadNotificationSuccess(res.data));
   } catch (err: any) {

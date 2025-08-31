@@ -14,7 +14,7 @@ export default function Home() {
     setOpenPost(true);
   };
   useEffect(() => {
-    // giả lập gọi API 2s
+   
     getUserById(userID,dispatch)
     setTimeout(() => setIsLoading(false), 1500);
 

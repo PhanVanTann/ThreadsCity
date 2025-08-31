@@ -32,7 +32,6 @@ export default function Login() {
     setForm({ ...form, [e.target.id.replace(" ", "")]: e.target.value });
    
    }
-   console.log("form", form)
   const handleSubmit = async (e: React.FormEvent) => {
 
     e.preventDefault();
@@ -98,9 +97,8 @@ export default function Login() {
                   <span>Đăng nhập với Google</span> */}
                    <GoogleLogin
                         onSuccess={async (cred) => {  
-                          const idToken = cred.credential;             // <-- ID token
-                          // (optional) xem nhanh payload
-                          console.log("idToken", idToken);
+                          const idToken = cred.credential;   
+                         
 
                           await loginByGoogle(idToken!,dispatch, navigate);
                         }}

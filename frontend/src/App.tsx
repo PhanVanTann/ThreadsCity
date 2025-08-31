@@ -30,7 +30,6 @@ function App() {
 
     const ws = connectNotificationWS({
       onMessage: (data) => {
-        console.log("Notification:", data);
         dispatch(addNotificationRealtime(data));
         
       },

@@ -2,8 +2,8 @@ import { useState,useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { FaRegCommentDots, FaUserPlus, FaEnvelope ,FaHeart} from "react-icons/fa";
-import { getListNotification } from "src/redux/api/apiRequestNotification";
-import type { an } from "node_modules/react-router/dist/development/context-DohQKLID.mjs";
+import { getListNotification,markAsReadNotification } from "src/redux/api/apiRequestNotification";
+import { FaRegCommentAlt } from "react-icons/fa";
 
 
 
@@ -11,7 +11,6 @@ import type { an } from "node_modules/react-router/dist/development/context-DohQ
 const mockData: Notification[] = [];
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState(mockData);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { data, isFetching } = useSelector((s:any)=> s.notification.getListNotification);
@@ -22,7 +21,7 @@ export default function Notifications() {
   const getIcon = (type: "comment" | "like" | "follow" | "message") => {
     switch (type) {
       case "comment": return <FaRegCommentDots className="text-blue-500" />;
-      case "message": return <FaEnvelope className="text-green-500" />;
+      case "message": return <FaRegCommentAlt className="text-green-500" />;
       case "follow":  return <FaUserPlus className="text-pink-500" />;
       case "like": return <FaHeart className="text-red-500" />;
       default: return null;
@@ -30,12 +29,15 @@ export default function Notifications() {
   };
 
 
-  const handleClick = (n: Notification) => {
-    setNotifications((prev) =>
-      prev.map((item) =>
-        item === n ? { ...item, isRead: true } : item
-      )
-    );
+  const handleClick = (n:any) => {
+    console.log(n,"notification");
+    if(!n.is_read){
+      markAsReadNotification({notification_id: n.id,user_id: currentUser},dispatch);
+
+    }
+    if (n.type === "follow") {
+      navigate(`/profile/${n.actor.actor_id}`);
+    }
 
   };
 
@@ -78,7 +80,7 @@ export default function Notifications() {
             )}
           </div>
         ))}
-        {notifications.length === 0 && (
+        {data.length === 0 && (
           <div className="p-4 text-sm text-gray-500 text-center">
             Chưa có thông báo
           </div>

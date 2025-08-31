@@ -128,7 +128,7 @@ export default function ProfileUser() {
 
   return (
     <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
-      <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-8">
+      <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-2">
         <img
           src={userData?.avatar || "https://i.pravatar.cc/150?img=1"}
           alt="avatar"
@@ -198,8 +198,10 @@ export default function ProfileUser() {
         ) : (
           <div className="border rounded-lg px-3 py-2 invisible">placeholder</div>
         )}
+  
       </div>
-
+      <div className="text-white text-sm text-center mb-3">{userData?.introduce}</div>
+ 
       <div className="flex sticky top-0 bg-black z-30">
         <div
           className={`w-1/2 cursor-pointer text-white flex items-center justify-center p-4 border-b ${
