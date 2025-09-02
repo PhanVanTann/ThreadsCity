@@ -2,15 +2,14 @@
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import TableSkeleton from './components/TableSkeleton';
 import BlockSkeleton from './components/BlockSkeleton';
-import Logout from 'src/auth/logout';
+import Logout from 'src/admin/components/adLogout';
 export default function DashBoardLayout() {
   // ví dụ: nếu bạn muốn hiển thị skeleton ở layout
   const showingSkeleton = false; // đổi theo logic của bạn
 
   return (
-    <div className="relative h-full">
+    <div className="relative w-full h-full">
       {/* header / sidebar ... */}
 
       <div className="w-screen flex justify-center">
@@ -19,7 +18,15 @@ export default function DashBoardLayout() {
         ) : null}
       </div>
       <div className='absolute top-5 right-5'>
-          <Logout/>
+              <button
+        className="w-[40px] h-[40px] p-1 rounded-full cursor-pointer hover:bg-[#e3e5e6]"
+        // tùy flow của bạn
+        aria-label="Đăng xuất"
+        title="Đăng xuất"
+      >
+        
+        <Logout/>
+      </button>
       </div>
       {/* nội dung route con */}
 

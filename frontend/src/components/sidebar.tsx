@@ -8,7 +8,7 @@ import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Post from "./postmodel";
 import { useClickOutside } from "../hook/useClickOutside"; 
-
+import { FaRegSnowflake } from 'react-icons/fa';
 export default function Sidebar() {
     const [openPost, setOpenPost] = useState(false);
     const [openMenu, setOpenMenu] = useState(false);
@@ -39,7 +39,7 @@ export default function Sidebar() {
             }}
                 >
                 <div className="px-3 py-2  rounded-lg  hover:text-white transition-colors">     
-                   <FaThreads  className="transition duration-200 hover:scale-125"  size={40}/>
+                   <FaRegSnowflake  className="transition duration-200 hover:scale-125"  size={40}/>
                </div>
               
             </NavLink>
@@ -143,7 +143,7 @@ export default function Sidebar() {
             </ul>
           </div>
         )}
-        <div ref={btnRef}  onClick={handleOpenmenu} className="text-[#4d4d4d] px-3 py-2 mt-4 rounded-lg hover:bg-[#1d1d1d] hover:text-white transition-colors">     
+        <div ref={menuRef}  onClick={handleOpenmenu} className="text-[#4d4d4d] px-3 py-2 mt-4 rounded-lg hover:bg-[#1d1d1d] hover:text-white transition-colors">     
           <RiMenu4Fill size={30} />
         </div>
     </div>

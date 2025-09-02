@@ -41,7 +41,7 @@ function CommentComponent({ comment, onReply, isActive, onShowPicker }: CommentP
     const first = user?.first_name ?? '';
     const last  = user?.last_name ?? '';
     return {
-      avatar: user?.avatar || 'https://i.pravatar.cc/100?img=1',
+      avatar: user?.avatar || '../../../public/Facebook-Avatar_3.png',
       fullName: `${last} ${first}`.trim() || 'Người dùng',
     };
   }, [user]);

@@ -56,8 +56,9 @@ export default function Login() {
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-[#000] gap-5">
      <div className="w-[450px] flex flex-col items-center  p-8 border border-[#353535] rounded shadow-md">
-        <div className="w-[350px] h-[120px] select-none">
-            <img src="../../public/1688663419threads-logo.png" alt="logo" className="bg-white rounded-[16px] dark:bg-[#fff]" />
+        <div className=" h-[60px] flex select-none items-center rounded-[18px] bg-white text-black">
+            <img src="../../public/COLOURBOX5754411.webp" alt="logo" className="h-full bg-white rounded-[16px] dark:bg-[#fff]" />
+            <h1 className="text-[50px] px-1  font-bold">WINTER CITY</h1>
         </div>
         <div >
            <form onSubmit={handleSubmit} className="flex flex-col items-center  gap-1 mt-4">

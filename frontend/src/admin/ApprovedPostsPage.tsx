@@ -58,12 +58,11 @@ export default function ApprovedPostsPage() {
   };
 
   return (
-    <div className="w-[90%] mx-auto h-[600px] bg-white dark:bg-[#181818] text-black dark:text-white flex flex-col items-center rounded-[20px] px-2 py-5">
+    <div className="w-[90%] mx-auto h-[600px] bg-white dark:bg-[#181818] text-black dark:text-white flex flex-col items-center rounded-[20px] px-2 py-5 mt-9">
       <div className="w-[90%] mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Danh sách bài đã duyệt</h1>
         <div className="flex gap-2">
           <button onClick={refetch} className="px-3 py-1 rounded-lg border border-[#3d3d3d] hover:bg-gray-100 dark:hover:bg-[#2b2b2b]">Refetch</button>
-          <Link to="/moderation/pending" className="px-3 py-1 rounded-lg border border-[#3d3d3d] hover:bg-gray-100 dark:hover:bg-[#2b2b2b]">← Bài đăng vi phạm</Link>
           <Link to="/moderation/pending" className="px-3 py-1 rounded-lg border border-[#3d3d3d] hover:bg-gray-100 dark:hover:bg-[#2b2b2b]">Trang chờ xử lý →</Link>
         </div>
       </div>

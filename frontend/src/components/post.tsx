@@ -52,7 +52,7 @@ export default function Post({ post }: { post: Post }) {
 
   const userPost = useSelector((s: any) => s.user.getUserByCommentId.data?.[post._id]);
 
-  // Lấy media đầu tiên nếu BE đôi lúc trả mảng
+  // --- MEDIA URL ---
   const mediaUrl = useMemo(() => {
     const raw = post.media as unknown;
     if (Array.isArray(raw)) return raw.find(Boolean) ?? '';
@@ -60,6 +60,11 @@ export default function Post({ post }: { post: Post }) {
   }, [post.media]);
 
   const isVideo = mediaUrl ? isVideoUrl(mediaUrl) : false;
+
+  // --- VIDEO REFS & STATE (THÊM MỚI) ---
+  const outerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const modalVideoRef = useRef<HTMLVideoElement | null>(null);
+  const lastTimeRef = useRef<number>(0);
 
   const handleClickProfileUser = useCallback(
     (user_id: string) => {
@@ -90,6 +95,7 @@ export default function Post({ post }: { post: Post }) {
     [currentUserId, post._id, dispatch]
   );
 
+  // Esc để đóng modal + khóa scroll
   useEffect(() => {
     if (!openComment) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenComment(false);
@@ -102,7 +108,7 @@ export default function Post({ post }: { post: Post }) {
     };
   }, [openComment]);
 
-
+  // Lấy user của post (cache per post)
   useEffect(() => {
     if (post.user_id && post._id) {
       // @ts-ignore
@@ -118,7 +124,7 @@ export default function Post({ post }: { post: Post }) {
   const [liked, setLiked] = useState<boolean>(initialLiked);
   const [loveCount, setLoveCount] = useState<number>(post.total_love ?? 0);
 
-  // Chỉ reset khi đổi post
+  // Reset khi đổi post
   useEffect(() => {
     setLiked(initialLiked);
     setLoveCount(post.total_love ?? 0);
@@ -157,6 +163,40 @@ export default function Post({ post }: { post: Post }) {
     }
   }, [currentUserId, dispatch, liked, post._id, pending]);
 
+  // --- LOGIC ĐÓNG BĂNG VIDEO NGOÀI & TỰ PHÁT TRONG MODAL (THÊM MỚI) ---
+  useEffect(() => {
+    if (!isVideo) return;
+
+    if (openComment) {
+      // Pause video ngoài và lưu thời điểm hiện tại
+      const outer = outerVideoRef.current;
+      if (outer) {
+        try {
+          lastTimeRef.current = outer.currentTime || 0;
+          outer.pause();
+        } catch {}
+      }
+
+      // Khi modal mở, phát video trong modal đúng thời điểm
+      requestAnimationFrame(() => {
+        const modalV = modalVideoRef.current;
+        if (modalV) {
+          try {
+            if (!Number.isNaN(lastTimeRef.current)) {
+              modalV.currentTime = lastTimeRef.current;
+            }
+            const p = modalV.play();
+            if (p && typeof p.then === 'function') p.catch(() => {});
+          } catch {}
+        }
+      });
+    } else {
+      // Đóng modal -> giữ "đóng băng" video ngoài (pause). Nếu muốn phát lại thì bật 2 dòng dưới:
+      // const outer = outerVideoRef.current;
+      // if (outer) { outer.currentTime = lastTimeRef.current; outer.play().catch(() => {}); }
+    }
+  }, [openComment, isVideo]);
+
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
@@ -183,13 +223,7 @@ export default function Post({ post }: { post: Post }) {
         {onClickMore && isMyPost && (
           <div className="absolute top-10 right-4 bg-gray-700 text-white rounded-lg shadow-lg z-10">
             <button
-              className="block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-t-lg"
-              onClick={() => setOnClickMore(false)}
-            >
-              Sửa bài viết
-            </button>
-            <button
-              className="block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-b-lg"
+              className="block px-4 py-2 hover:bg-gray-600 w-full text-left rounded-lg"
               onClick={() => {
                 setOnClickMore(false);
                 setOpenDel(true);
@@ -216,7 +250,15 @@ export default function Post({ post }: { post: Post }) {
             className="relative w-full h-[400px] flex justify-center items-center overflow-hidden rounded-lg"
           >
             {isVideo ? (
-              <video controls className="w-full rounded-lg">
+              <video
+                ref={outerVideoRef}
+                autoPlay     
+                muted 
+                controls
+                loop
+                playsInline
+                className="h-full rounded-lg"
+              >
                 <source src={mediaUrl} />
                 Trình duyệt không hỗ trợ video.
               </video>
@@ -264,7 +306,16 @@ export default function Post({ post }: { post: Post }) {
               {/* Media */}
               <div className="flex-shrink-0 w-full flex-1 flex justify-center items-center">
                 {mediaUrl && mediaUrl.length > 0 && (isVideo ? (
-                  <video controls className="w-full rounded-lg">
+                  <video
+                    ref={modalVideoRef}
+                   
+                    autoPlay
+                     muted
+                    loop
+                    controls
+                    playsInline
+                    className="h-full rounded-lg"
+                  >
                     <source src={mediaUrl} />
                   </video>
                 ) : (
