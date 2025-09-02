@@ -23,8 +23,8 @@ cloudinary.config(
 
 models = {
     "weapon": YOLO("models/predict_img/yolo_weapon/runs/train/weights/best.pt"),
-    "violence": YOLO("models/predict_img/yolo_violence/runs/train/weights/best.pt"),
-    "blood": YOLO("models/predict_img/yolo_blood/runs/train/weights/best.pt"),
+    "violence": YOLO("models/predict_img/yolo_violence/runs1/train/weights/best.pt"),
+    "smoke": YOLO("models/predict_img/yolo_smoking/runs/train/weights/best.pt"),
 
 }
 
