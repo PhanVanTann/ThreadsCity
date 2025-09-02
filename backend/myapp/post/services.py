@@ -122,7 +122,7 @@ class CensorshipService(collection):
             else:
                 return {"success": False, "error": "No content provided."}
 
-            data_Isvalid = ["NonViolence"]
+            data_Isvalid = ["NonViolence","non_violence"]
             censoreds, awaiting, valids = [], [], []
 
             if media_result and "data" in media_result:
@@ -332,8 +332,24 @@ class CensorshipService(collection):
                 return {"success":False,"message":"không tìm thấy bài đăng"}
             if status == "valid":
                 self.post_collection.update_one({'_id':ObjectId(post_id)},{'$set':{'status':status,'flag':False}})
+                notification_service.create_notification({
+                            "user_id": postData["user_id"],
+                            "actor_id": None,
+                            "type": "censorship",
+                            "resource_type": "post",
+                            "resource_id": post_id,
+                            "message": f"Bài viết của bạn đã được duyệt và hiển thị trên trang chủ."
+                        })
             else:
                 self.post_collection.update_one({'_id':ObjectId(post_id)},{'$set':{'status':status}})
+                notification_service.create_notification({
+                            "user_id": postData["user_id"],
+                            "actor_id": None,
+                            "type": "censorship",
+                            "resource_type": "post",
+                            "resource_id": post_id,
+                            "message": f"Bài viết của bạn không được duyệt vì vi phạm tiêu chuẩn cộng đồng."
+                        })
             return {"success":True,"message":"cập nhật trạng thái thành công"}
         except Exception as e:
             return {"success": False, "error": str(e)}

@@ -134,19 +134,19 @@ export default function PendingModerationPage() {
             {selected?.censorships?.map((item:any) => (
               <div className="" key={item._id}>
               <p className="mb-3 text-yellow-600">Điểm AI: <span className="font-semibold">{item.confidence}</span> → cần admin kiểm duyệt</p>
-
-            
+              <p className="mb-3">Lý do: <span className="font-semibold">{item.label}</span></p>
+              
+              
               <div className="mb-4">   
                   <img src={item.image_url} alt="media" className="w-full max-h-[360px] object-contain rounded-lg" />
               </div>
           
 
-            <div className="flex justify-end gap-3">
-              <button onClick={() => handleUpdateStatus(item.post_id,'valid')} className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">Chấp nhận</button>
-              <button onClick={() => handleUpdateStatus(item.post_id,'not valid')} className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">Từ chối</button>
+           
             </div>
-            </div>
+
        ))}
+       
           </div>
         </div>
       )}
