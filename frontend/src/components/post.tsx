@@ -12,6 +12,8 @@ import { CreateComments, GetComments } from 'src/redux/api/apiRequestComment';
 import { useNavigate } from 'react-router-dom';
 import { deletePostByUser, getHeartbyPostId, getlistPost, getPostValidById } from 'src/redux/api/apiRequestPost.js';
 import { getUserByCommentId } from 'src/redux/api/apiRequestUser.js';
+import { resetListPost } from "src/redux/slice/postSlice";
+
 
 type Post = {
   _id: string;
@@ -61,10 +63,11 @@ export default function Post({ post }: { post: Post }) {
 
   const isVideo = mediaUrl ? isVideoUrl(mediaUrl) : false;
 
-  // --- VIDEO REFS & STATE (THÊM MỚI) ---
+  // --- VIDEO REFS & STATE ---
   const outerVideoRef = useRef<HTMLVideoElement | null>(null);
   const modalVideoRef = useRef<HTMLVideoElement | null>(null);
   const lastTimeRef = useRef<number>(0);
+  const outerBoxRef = useRef<HTMLDivElement | null>(null); // box để observe viewport
 
   const handleClickProfileUser = useCallback(
     (user_id: string) => {
@@ -163,7 +166,7 @@ export default function Post({ post }: { post: Post }) {
     }
   }, [currentUserId, dispatch, liked, post._id, pending]);
 
-  // --- LOGIC ĐÓNG BĂNG VIDEO NGOÀI & TỰ PHÁT TRONG MODAL (THÊM MỚI) ---
+  // --- LOGIC ĐÓNG BĂNG VIDEO NGOÀI & TỰ PHÁT TRONG MODAL ---
   useEffect(() => {
     if (!isVideo) return;
 
@@ -190,12 +193,65 @@ export default function Post({ post }: { post: Post }) {
           } catch {}
         }
       });
-    } else {
-      // Đóng modal -> giữ "đóng băng" video ngoài (pause). Nếu muốn phát lại thì bật 2 dòng dưới:
-      // const outer = outerVideoRef.current;
-      // if (outer) { outer.currentTime = lastTimeRef.current; outer.play().catch(() => {}); }
-    }
+    } 
   }, [openComment, isVideo]);
+
+  // --- CHỈ PHÁT VIDEO KHI Ở TRONG KHUNG HÌNH (VIEWPORT) ---
+  useEffect(() => {
+    if (!isVideo) return;
+    const box = outerBoxRef.current;
+    const video = outerVideoRef.current;
+    if (!box || !video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const v = outerVideoRef.current;
+        if (!v) return;
+
+        // Nếu đang mở modal, luôn pause video ngoài
+        if (openComment) {
+          v.pause();
+          return;
+        }
+
+        // Phát khi thực sự ở trong khung >= 60% diện tích
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          v.play().catch(() => {});
+        } else {
+          v.pause();
+        }
+      },
+      { threshold: [0, 0.25, 0.6, 1] }
+    );
+
+    observer.observe(box);
+
+    // Tab ẩn thì pause
+    const onVisibility = () => {
+      const v = outerVideoRef.current;
+      if (!v) return;
+      if (document.hidden) v.pause();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [isVideo, openComment]);
+
+  // --- PAUSE NGAY LẬP TỨC RỒI MỞ MODAL ---
+  const handleOpenModal = useCallback(() => {
+    const outer = outerVideoRef.current;
+    if (outer) {
+      try {
+        lastTimeRef.current = outer.currentTime || 0;
+        outer.pause(); // dừng ngay lập tức
+        outer.setAttribute('data-paused-by-modal', '1');
+      } catch {}
+    }
+    setOpenComment(true);
+  }, []);
 
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
@@ -240,21 +296,22 @@ export default function Post({ post }: { post: Post }) {
       <div className="w-full flex flex-col gap-3">
         {post.text && (
           <div className="w-full">
-            <p className="text-md font-medium text-white">{post.text}</p>
+            <p className="text-md font-medium text-white whitespace-pre-line">{post.text}</p>
           </div>
         )}
 
         {mediaUrl && (
           <div
-            onClick={() => setOpenComment((v) => !v)}
+            ref={outerBoxRef}
+            onClick={handleOpenModal}
             className="relative w-full h-[400px] flex justify-center items-center overflow-hidden rounded-lg"
           >
             {isVideo ? (
               <video
                 ref={outerVideoRef}
-                autoPlay     
-                muted 
-                controls
+                // KHÔNG autoPlay ở đây: play/pause do IntersectionObserver điều khiển
+                muted
+                controls={!openComment}  // ẩn controls khi modal mở để tránh tương tác ngầm
                 loop
                 playsInline
                 className="h-full rounded-lg"
@@ -263,7 +320,7 @@ export default function Post({ post }: { post: Post }) {
                 Trình duyệt không hỗ trợ video.
               </video>
             ) : (
-              <img src={mediaUrl} alt="media" className="h-full rounded-lg" />
+              <img src={mediaUrl} alt="media" className="h-full w-full object-contain rounded-lg" />
             )}
           </div>
         )}
@@ -308,9 +365,8 @@ export default function Post({ post }: { post: Post }) {
                 {mediaUrl && mediaUrl.length > 0 && (isVideo ? (
                   <video
                     ref={modalVideoRef}
-                   
                     autoPlay
-                     muted
+                    
                     loop
                     controls
                     playsInline
@@ -319,7 +375,7 @@ export default function Post({ post }: { post: Post }) {
                     <source src={mediaUrl} />
                   </video>
                 ) : (
-                  <img src={mediaUrl} className="h-full rounded-lg" />
+                  <img src={mediaUrl} className="h-full w-full object-contain rounded-lg" />
                 ))}
               </div>
 
@@ -348,7 +404,7 @@ export default function Post({ post }: { post: Post }) {
 
                 {post.text && (
                   <div className="w-full py-4 border-b border-[#3d3d3d]">
-                    <p className="text-md font-medium text-white">{post.text}</p>
+                    <p className="text-md font-medium text-white whitespace-pre-line">{post.text}</p>
                   </div>
                 )}
 
@@ -397,7 +453,7 @@ export default function Post({ post }: { post: Post }) {
           try {
             setDeleting(true);
             await deletePostByUser({ user_id: currentUserId, post_id: postid }, dispatch);
-            await getlistPost(dispatch);
+            await dispatch(resetListPost());
             await getPostValidById(currentUserId as string, dispatch);
             setOpenDel(false);
           } finally {
