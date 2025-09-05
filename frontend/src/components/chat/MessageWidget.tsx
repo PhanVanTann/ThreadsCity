@@ -88,11 +88,11 @@ export default function MessageWidget() {
     });
   }, [historyRes, historyRecvRes, currentUserId]);
   
-    // WebSocket: đóng cũ, mở mới theo roomId & activeOther
+    
     useEffect(() => {
       if (!activeOther || !roomId || !currentUserId) return;
   
-      wsRef.current?.close(); // đóng socket cũ nếu có
+      wsRef.current?.close(); 
   
       wsRef.current = connectChatWS({
         roomId,

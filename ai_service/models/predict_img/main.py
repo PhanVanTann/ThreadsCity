@@ -19,11 +19,11 @@ cloudinary.config(
     api_key = api_key,
     api_secret = api_secret,
     secure = True
-)
+) 
 
 models = {
-    "weapon": YOLO("models/predict_img/yolo_weapon/runs/train/weights/best.pt"),
-    "violence": YOLO("models/predict_img/yolo_violence/runs1/train/weights/best.pt"),
+    "weapon": YOLO("models/predict_img/yolo_weapon/runs1/train/weights/best.pt"),
+    "violence": YOLO("models/predict_img/yolo_violence/run2/train/weights/best.pt"),
     "smoke": YOLO("models/predict_img/yolo_smoking/runs/train/weights/best.pt"),
 
 }
@@ -50,4 +50,4 @@ def predict(url: str, postid: str):
 
         for future in futures:
             results_all.append(future.result())
-        return results_all
+        return results_all 
