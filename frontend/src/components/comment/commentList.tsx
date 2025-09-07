@@ -23,7 +23,7 @@ export default function CommentList({ postId, comments, onReply }: Props) {
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
-  // Gom theo parent
+  // Map parent -> children
   const byParent = useMemo(() => {
     const map = new Map<string | null, CommentItem[]>();
     for (const c of comments) {
@@ -34,7 +34,14 @@ export default function CommentList({ postId, comments, onReply }: Props) {
     return map;
   }, [comments]);
 
-  // Lấy toàn bộ descendants để đếm & flatten
+  // Map child -> parent (để mở toàn bộ ancestors khi có comment mới)
+  const parentOf = useMemo(() => {
+    const m: Record<string, string | null> = {};
+    for (const c of comments) m[c._id] = c.parent_id ?? null;
+    return m;
+  }, [comments]);
+
+  // Thu thập toàn bộ descendants để đếm & flatten
   const collectDescendants = (id: string): CommentItem[] => {
     const out: CommentItem[] = [];
     const stack = [...(byParent.get(id) ?? [])];
@@ -48,7 +55,7 @@ export default function CommentList({ postId, comments, onReply }: Props) {
   };
   const countDescendants = (id: string) => collectDescendants(id).length;
 
-  // --- INIT: mặc định ẩn chỉ 1 lần ---
+  // --- INIT: mặc định ẩn các nhánh có con (chạy 1 lần) ---
   const didInitRef = useRef(false);
   useEffect(() => {
     if (didInitRef.current) return;
@@ -62,32 +69,61 @@ export default function CommentList({ postId, comments, onReply }: Props) {
     didInitRef.current = true;
   }, [comments, byParent]);
 
-  // --- AUTO-EXPAND: mở cha của comment mới thêm, nhưng bỏ qua lần đầu ---
+  // --- Ref tới từng comment DOM để scroll ---
+  const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const setNodeRef = (id: string) => (el: HTMLDivElement | null) => {
+    nodeRefs.current[id] = el;
+  };
+
+  // id cần scroll sau khi render
+  const pendingScrollIdRef = useRef<string | null>(null);
+
+  // --- AUTO-EXPAND + đánh dấu cần scroll khi có comment mới ---
   const prevIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     const nowIds = new Set(comments.map((c) => c._id));
 
-    // lần đầu: ghi nhận rồi thoát, tránh mở ồ ạt
+    // Lần đầu: ghi nhận rồi thoát
     if (prevIdsRef.current.size === 0) {
       prevIdsRef.current = nowIds;
       return;
     }
 
-    // các id mới xuất hiện
+    // Tìm các id mới
     const added = comments.filter((c) => !prevIdsRef.current.has(c._id));
     if (added.length) {
+      const newest = added[added.length - 1]; // ưu tiên mới nhất
+      // Mở toàn bộ ancestors của comment mới
       setCollapsed((prev) => {
         const next = { ...prev };
-        for (const a of added) {
-          const p = a.parent_id ?? null;
-          if (p) next[p] = false; // mở nhánh cha để thấy comment mới
+        let p = parentOf[newest._id];
+        while (p) {
+          next[p] = false; // mở cha
+          p = parentOf[p];
         }
         return next;
       });
+      // Sau khi mở nhánh, đánh dấu sẽ scroll tới comment mới
+      pendingScrollIdRef.current = newest._id;
     }
 
     prevIdsRef.current = nowIds;
-  }, [comments]);
+  }, [comments, parentOf]);
+
+  // Khi collapsed hoặc comments thay đổi (sau khi render), thực hiện scroll
+  useEffect(() => {
+    const id = pendingScrollIdRef.current;
+    if (!id) return;
+
+    // Đợi 1 frame cho layout ổn định
+    requestAnimationFrame(() => {
+      const el = nodeRefs.current[id];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      pendingScrollIdRef.current = null;
+    });
+  }, [comments, collapsed]);
 
   const handleShowPicker = (commentId: string) => {
     setActiveCommentId((cur) => (cur === commentId ? null : commentId));
@@ -103,7 +139,7 @@ export default function CommentList({ postId, comments, onReply }: Props) {
   const renderFlatDescendants = (parentId: string, visibleLevel: number) => {
     const flat = collectDescendants(parentId);
     return flat.map((c) => (
-      <div key={c._id} className={indentClass(visibleLevel)}>
+      <div key={c._id} ref={setNodeRef(c._id)} className={indentClass(visibleLevel)}>
         <Comment
           comment={c}
           onReply={onReply}
@@ -114,7 +150,10 @@ export default function CommentList({ postId, comments, onReply }: Props) {
     ));
   };
 
-  const renderComments = (parentId: string | null = null, level = 1): React.ReactNode => {
+  const renderComments = (
+    parentId: string | null = null,
+    level = 1
+  ): React.ReactNode => {
     const list = byParent.get(parentId) ?? [];
     return list.map((comment) => {
       const totalDesc = countDescendants(comment._id);
@@ -138,7 +177,9 @@ export default function CommentList({ postId, comments, onReply }: Props) {
               aria-expanded={isCollapsed ? "false" : "true"}
               aria-controls={controlsId}
             >
-              {isCollapsed ? `Hiện ${totalDesc} phản hồi` : `Ẩn ${totalDesc} phản hồi`}
+              {isCollapsed
+                ? `Hiện ${totalDesc} phản hồi`
+                : `Ẩn ${totalDesc} phản hồi`}
             </button>
             <div id={controlsId} className={isCollapsed ? "hidden" : "block"}>
               {content}
@@ -148,7 +189,7 @@ export default function CommentList({ postId, comments, onReply }: Props) {
       }
 
       return (
-        <div key={comment._id} className={indentClass(level)}>
+        <div key={comment._id} ref={setNodeRef(comment._id)} className={indentClass(level)}>
           <Comment
             comment={comment}
             onReply={onReply}

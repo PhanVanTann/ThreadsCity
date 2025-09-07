@@ -10,10 +10,9 @@ import CreateComment from './comment/createComment.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { CreateComments, GetComments } from 'src/redux/api/apiRequestComment';
 import { useNavigate } from 'react-router-dom';
-import { deletePostByUser, getHeartbyPostId, getlistPost, getPostValidById } from 'src/redux/api/apiRequestPost.js';
+import { deletePostByUser, getHeartbyPostId, getPostValidById } from 'src/redux/api/apiRequestPost.js';
 import { getUserByCommentId } from 'src/redux/api/apiRequestUser.js';
 import { resetListPost } from "src/redux/slice/postSlice";
-
 
 type Post = {
   _id: string;
@@ -37,6 +36,7 @@ const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)$/i.test(url);
 export default function Post({ post }: { post: Post }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const [openComment, setOpenComment] = useState(false);
   const [onClickMore, setOnClickMore] = useState(false);
   const [openDel, setOpenDel] = useState(false);
@@ -46,13 +46,38 @@ export default function Post({ post }: { post: Post }) {
   const currentUserId = useSelector((s: any) => s.auth.login.currentUser?.user_id) as string | undefined;
   const isMyPost = currentUserId === post.user_id;
 
+  // Dùng postId là string cho nhất quán key
+  const postId = String(post._id);
+
+  // Lấy state comment theo key chuẩn hóa
   const commentsState =
-    useSelector((s: any) => s.comment.byPost?.[post._id]) ||
+    useSelector((s: any) => s.comment.byPost?.[postId]) ||
     ({ data: null, isFetching: false, error: false, success: false } as any);
   const { data, isFetching, error, success } = commentsState;
   const comments: any[] = data?.data ?? [];
 
-  const userPost = useSelector((s: any) => s.user.getUserByCommentId.data?.[post._id]);
+  // Số bình luận hiển thị
+  const [commentCount, setCommentCount] = useState<number>(post.total_comment ?? 0);
+
+  // Đổi post → reset số
+  useEffect(() => {
+    setCommentCount(post.total_comment ?? 0);
+  }, [postId, post.total_comment]);
+
+  // Mở modal → fetch comment (để đảm bảo có dữ liệu và hiện ngay)
+  useEffect(() => {
+    if (!openComment) return;
+    GetComments(postId, dispatch);
+  }, [openComment, postId, dispatch]);
+
+  // Khi fetch xong → đồng bộ số theo length thực tế
+  useEffect(() => {
+    if (success && Array.isArray(comments)) {
+      setCommentCount(comments.length);
+    }
+  }, [success, comments.length]);
+
+  const userPost = useSelector((s: any) => s.user.getUserByCommentId.data?.[postId]);
 
   // --- MEDIA URL ---
   const mediaUrl = useMemo(() => {
@@ -67,7 +92,10 @@ export default function Post({ post }: { post: Post }) {
   const outerVideoRef = useRef<HTMLVideoElement | null>(null);
   const modalVideoRef = useRef<HTMLVideoElement | null>(null);
   const lastTimeRef = useRef<number>(0);
-  const outerBoxRef = useRef<HTMLDivElement | null>(null); // box để observe viewport
+  const outerBoxRef = useRef<HTMLDivElement | null>(null);
+
+  // --- Scroll lock (fix không nhảy về đầu trang) ---
+  const lockScrollYRef = useRef(0);
 
   const handleClickProfileUser = useCallback(
     (user_id: string) => {
@@ -76,48 +104,13 @@ export default function Post({ post }: { post: Post }) {
     [currentUserId, navigate]
   );
 
-  // Mở comment mới fetch (nếu chưa có cache)
-  useEffect(() => {
-    if (!openComment || success) return;
-    GetComments(post._id, dispatch);
-  }, [openComment, success, post._id, dispatch]);
-
-  const handleReply = useCallback(
-    async (text: string, parentId: string) => {
-      if (!text.trim()) return;
-      await CreateComments(
-        {
-          user_id: currentUserId,
-          post_id: post._id,
-          content: text.trim(),
-          parent_id: parentId,
-        },
-        dispatch
-      );
-    },
-    [currentUserId, post._id, dispatch]
-  );
-
-  // Esc để đóng modal + khóa scroll
-  useEffect(() => {
-    if (!openComment) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpenComment(false);
-    window.addEventListener('keydown', onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [openComment]);
-
   // Lấy user của post (cache per post)
   useEffect(() => {
-    if (post.user_id && post._id) {
+    if (post.user_id && postId) {
       // @ts-ignore
-      dispatch(getUserByCommentId(post.user_id, post._id));
+      dispatch(getUserByCommentId(post.user_id, postId));
     }
-  }, [post.user_id, post._id, dispatch]);
+  }, [post.user_id, postId, dispatch]);
 
   // ----- LIKE STATE  -----
   const initialLiked = useMemo(() => {
@@ -131,7 +124,7 @@ export default function Post({ post }: { post: Post }) {
   useEffect(() => {
     setLiked(initialLiked);
     setLoveCount(post.total_love ?? 0);
-  }, [post._id]); // cố ý chỉ phụ thuộc _id
+  }, [postId]); // cố ý chỉ phụ thuộc id
 
   // Chống double-click & out-of-order
   const [pending, setPending] = useState(false);
@@ -148,30 +141,25 @@ export default function Post({ post }: { post: Post }) {
     setLoveCount((c) => c + (next ? 1 : -1));
 
     try {
-      // POST toggle (API tên "getHeartbyPostId" nhưng thực chất là POST)
-      const res: any = await getHeartbyPostId({ post_id: post._id, user_id: currentUserId }, dispatch);
-
-      if (myOp !== opRef.current) return; // chỉ nhận response mới nhất
-
+      const res: any = await getHeartbyPostId({ post_id: postId, user_id: currentUserId }, dispatch);
+      if (myOp !== opRef.current) return;
       if (typeof res?.data?.liked === 'boolean') setLiked(res.data.liked);
       if (typeof res?.data?.total_love === 'number') setLoveCount(res.data.total_love);
     } catch {
       if (myOp === opRef.current) {
-        // rollback
         setLiked((v) => !v);
         setLoveCount((c) => c + (next ? -1 : 1));
       }
     } finally {
       if (myOp === opRef.current) setPending(false);
     }
-  }, [currentUserId, dispatch, liked, post._id, pending]);
+  }, [currentUserId, dispatch, liked, postId, pending]);
 
-  // --- LOGIC ĐÓNG BĂNG VIDEO NGOÀI & TỰ PHÁT TRONG MODAL ---
+  // --- LOGIC VIDEO ---
   useEffect(() => {
     if (!isVideo) return;
 
     if (openComment) {
-      // Pause video ngoài và lưu thời điểm hiện tại
       const outer = outerVideoRef.current;
       if (outer) {
         try {
@@ -179,24 +167,19 @@ export default function Post({ post }: { post: Post }) {
           outer.pause();
         } catch {}
       }
-
-      // Khi modal mở, phát video trong modal đúng thời điểm
       requestAnimationFrame(() => {
         const modalV = modalVideoRef.current;
         if (modalV) {
           try {
-            if (!Number.isNaN(lastTimeRef.current)) {
-              modalV.currentTime = lastTimeRef.current;
-            }
+            if (!Number.isNaN(lastTimeRef.current)) modalV.currentTime = lastTimeRef.current;
             const p = modalV.play();
             if (p && typeof p.then === 'function') p.catch(() => {});
           } catch {}
         }
       });
-    } 
+    }
   }, [openComment, isVideo]);
 
-  // --- CHỈ PHÁT VIDEO KHI Ở TRONG KHUNG HÌNH (VIEWPORT) ---
   useEffect(() => {
     if (!isVideo) return;
     const box = outerBoxRef.current;
@@ -207,14 +190,10 @@ export default function Post({ post }: { post: Post }) {
       ([entry]) => {
         const v = outerVideoRef.current;
         if (!v) return;
-
-        // Nếu đang mở modal, luôn pause video ngoài
         if (openComment) {
           v.pause();
           return;
         }
-
-        // Phát khi thực sự ở trong khung >= 60% diện tích
         if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
           v.play().catch(() => {});
         } else {
@@ -225,33 +204,93 @@ export default function Post({ post }: { post: Post }) {
     );
 
     observer.observe(box);
-
-    // Tab ẩn thì pause
     const onVisibility = () => {
       const v = outerVideoRef.current;
       if (!v) return;
       if (document.hidden) v.pause();
     };
     document.addEventListener('visibilitychange', onVisibility);
-
     return () => {
       observer.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [isVideo, openComment]);
 
-  // --- PAUSE NGAY LẬP TỨC RỒI MỞ MODAL ---
   const handleOpenModal = useCallback(() => {
     const outer = outerVideoRef.current;
     if (outer) {
       try {
         lastTimeRef.current = outer.currentTime || 0;
-        outer.pause(); // dừng ngay lập tức
+        outer.pause();
         outer.setAttribute('data-paused-by-modal', '1');
       } catch {}
     }
     setOpenComment(true);
   }, []);
+
+  // ====== GỬI COMMENT ======
+  // Reply trong list: +1 ngay + refetch để thấy comment mới
+  const handleReply = useCallback(
+    async (text: string, parentId: string) => {
+      if (!text.trim()) return;
+      setCommentCount((c) => c + 1); // optimistic
+      await CreateComments(
+        {
+          user_id: currentUserId,
+          post_id: postId,
+          content: text.trim(),
+          parent_id: parentId,
+        },
+        dispatch
+      );
+      GetComments(postId, dispatch); // refetch để list hiển thị ngay
+    },
+    [currentUserId, postId, dispatch]
+  );
+
+  // Comment gốc ở CreateComment: +1 ngay + refetch
+  const handleCreatedRootComment = useCallback(() => {
+    setCommentCount((c) => c + 1);
+    GetComments(postId, dispatch);
+  }, [postId, dispatch]);
+
+  // ===== Khóa scroll nền bằng position:fixed (không nhảy về top) =====
+  useEffect(() => {
+    if (!openComment) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    // 1) Ghi nhớ vị trí hiện tại
+    lockScrollYRef.current = window.scrollY || window.pageYOffset || 0;
+
+    // 2) Tính độ rộng scrollbar để bù
+    const scrollbarW = window.innerWidth - (html?.clientWidth || 0);
+
+    // 3) Khóa scroll nền
+    html.style.overflowY = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${lockScrollYRef.current}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflowY = 'scroll';
+    if (scrollbarW > 0) body.style.paddingRight = `${scrollbarW}px`;
+
+    return () => {
+      // Mở khóa + khôi phục vị trí
+      html.style.overflowY = '';
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      body.style.overflowY = '';
+      body.style.paddingRight = '';
+      window.scrollTo(0, lockScrollYRef.current);
+    };
+  }, [openComment]);
+
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
@@ -282,7 +321,7 @@ export default function Post({ post }: { post: Post }) {
               onClick={() => {
                 setOnClickMore(false);
                 setOpenDel(true);
-                setPostId(post._id);
+                setPostId(postId);
               }}
             >
               Xóa bài viết
@@ -308,9 +347,8 @@ export default function Post({ post }: { post: Post }) {
             {isVideo ? (
               <video
                 ref={outerVideoRef}
-                // KHÔNG autoPlay ở đây: play/pause do IntersectionObserver điều khiển
                 muted
-                controls={!openComment}  // ẩn controls khi modal mở để tránh tương tác ngầm
+                controls={!openComment}
                 loop
                 playsInline
                 className="h-full rounded-lg"
@@ -333,7 +371,7 @@ export default function Post({ post }: { post: Post }) {
             <button title="Bình luận" className="text-gray-300 h-[20px]" onClick={() => setOpenComment((v) => !v)}>
               <FaRegComment size={20} />
             </button>
-            <span className="text-[20px]">{post.total_comment}</span>
+            <span className="text-[20px]">{commentCount}</span>
           </div>
         </div>
       </div>
@@ -365,8 +403,8 @@ export default function Post({ post }: { post: Post }) {
                   <video
                     ref={modalVideoRef}
                     autoPlay
-                    
                     loop
+                    muted
                     controls
                     playsInline
                     className="h-full rounded-lg"
@@ -379,11 +417,7 @@ export default function Post({ post }: { post: Post }) {
               </div>
 
               {/* Vùng scroll */}
-              <div
-                className={`flex flex-col h-full  ${
-                  mediaUrl && mediaUrl.length > 0 ? 'w-[30%]' : 'w-full'
-                }`}
-              >
+              <div className={`flex flex-col h-full ${mediaUrl && mediaUrl.length > 0 ? 'w-[30%]' : 'w-full'}`}>
                 <div className="flex w-full items-center">
                   <img
                     src={post.avatar || 'https://i.pravatar.cc/150?img=1'}
@@ -396,12 +430,14 @@ export default function Post({ post }: { post: Post }) {
                     </span>
                     <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
                   </div>
-                  
+                  <div className="p-2 text-white cursor-pointer">
+                    <AiOutlineMore size={20} />
+                  </div>
                 </div>
 
                 {post.text && (
                   <div className="w-full py-4 border-b border-[#3d3d3d]">
-                    <p className="text-md font-medium text-white whitespace-pre-wrap break-words">{post.text}</p>
+                    <p className="text-md font-medium text-white whitespace-pre-line">{post.text}</p>
                   </div>
                 )}
 
@@ -418,7 +454,7 @@ export default function Post({ post }: { post: Post }) {
                       <button title="Bình luận" className="text-gray-300 h-[20px]">
                         <FaRegComment size={20} />
                       </button>
-                      <span className="text-[20px]">{post.total_comment}</span>
+                      <span className="text-[20px]">{commentCount}</span>
                     </div>
                   </div>
                 </div>
@@ -429,13 +465,19 @@ export default function Post({ post }: { post: Post }) {
                   ) : error ? (
                     <div className="text-red-400 p-5">Lỗi tải bình luận</div>
                   ) : comments.length > 0 ? (
-                    <CommentList postId={post._id} comments={comments} onReply={handleReply} />
+                    <CommentList postId={postId} comments={comments} onReply={handleReply} />
                   ) : (
                     <div className="text-white p-5">Chưa có bình luận nào</div>
                   )}
                 </div>
 
-                <CreateComment post_id={post._id} isActive={openComment} />
+                {/* Sau khi tạo comment gốc: +1 & refetch để hiển thị ngay */}
+                <CreateComment
+                  post_id={postId}
+                  isActive={openComment}
+                  // @ts-ignore - component .js chấp nhận prop này
+                  onCreated={handleCreatedRootComment}
+                />
               </div>
             </div>
           </div>

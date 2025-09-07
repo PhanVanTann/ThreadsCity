@@ -202,7 +202,7 @@ export default function MessageWidget() {
     onEscape: () => setIsOpen(false),
   });
 
-  // =============== PHẦN QUAN TRỌNG: CLEAR CHẤM ĐỎ KHI MỞ TIN NHẮN ===============
+  
 
   // 1) Khi mở modal chat (isOpen=true) → mark read TẤT CẢ noti type:"message" chưa đọc (chỉ khi KHÔNG ở trang /notifications)
   useEffect(() => {

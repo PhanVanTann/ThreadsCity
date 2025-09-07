@@ -27,3 +27,11 @@ body {
 .scroll-hidden::-webkit-scrollbar {
   display: none;                  /* Chrome, Safari, Edge Chromium */
 }
+/* Giữ rãnh scrollbar cố định để không giật layout */
+html { scrollbar-gutter: stable both-edges; }
+
+/* Khi mở modal, khóa cuộn nền */
+html.modal-open { overflow: hidden; }
+
+/* (iOS chắc ăn hơn) khóa thao tác cuộn cảm ứng */
+html.modal-open { touch-action: none; }

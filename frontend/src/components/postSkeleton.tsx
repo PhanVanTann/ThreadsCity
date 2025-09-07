@@ -6,7 +6,7 @@ export default function PostSkeleton() {
       {/* Header */}
       <div className="flex w-full items-center">
         <div className="w-[40px] h-[40px] rounded-full bg-gray-400 dark:bg-gray-600 mr-2"></div>
-        <div className="flex flex-col gap-2 flex-grow">
+        <div className="flex  gap-2 flex-grow">
           <div className="w-32 h-4 bg-gray-400 dark:bg-gray-600 rounded"></div>
           <div className="w-20 h-3 bg-gray-500 dark:bg-gray-700 rounded"></div>
         </div>

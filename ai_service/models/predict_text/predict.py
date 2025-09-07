@@ -48,7 +48,7 @@ def predict_text(postid, text: str):
     original_text = text.replace("\r\n", "\n")
 
     # 1) Cắt chuỗi nhưng GIỮ nguyên whitespace (xuống dòng, tab, nhiều space)
-    #    tokens: ["Xin", " ", "chào", "\n", "bạn", "  ", "nhé", ...]
+    
     tokens = re.split(r'(\s+)', original_text)
     # Lấy danh sách "từ" (non-whitespace) theo đúng thứ tự xuất hiện
     words = [t for t in tokens if not t.isspace() and t != ""]

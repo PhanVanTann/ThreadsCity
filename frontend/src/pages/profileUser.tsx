@@ -128,14 +128,14 @@ export default function ProfileUser() {
 
   return (
     <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000]  ">
-      <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-2">
+      <div className="flex h-[200px] rounded-[20px] bg-black justify-between w-full items-start p-2">
         <img
           src={userData?.avatar || "https://i.pravatar.cc/150?img=1"}
           alt="avatar"
-          className="object-cover rounded-full w-[100px] h-[100px]"
+          className="object-cover rounded-full w-[100px] h-[100px] mt-5 ml-5"
         />
 
-        <div className="w-[300px] h-[100px] flex flex-col items-start justify-center">
+        <div className="w-[380px] h-[100px] flex flex-col items-start justify-center mt-5">
           <div className="flex gap-5 h-[35px]">
             <span className="text-white text-xl font-bold ">
               {`${userData?.last_name ?? ""} ${userData?.first_name ?? ""}`}
@@ -185,7 +185,7 @@ export default function ProfileUser() {
         </div>
 
         {userId === currentUserId ? (
-          <div>
+          <div className='mt-5'>
             <button className="border rounded-lg px-3 py-2" onClick={() => setOpenEdit(true)}>
               chỉnh sửa
             </button>
