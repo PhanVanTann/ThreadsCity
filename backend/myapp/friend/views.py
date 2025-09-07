@@ -22,7 +22,7 @@ class FriendView(APIView):
 
 class ListFriendView(APIView):
     def get(self,request):
-        user_id = request.GET.get('user_id') 
+        user_id = request.GET.get('user_id')  
         result = friendService.getlistfriend(user_id)
         return JsonResponse(result,status = 200)
     

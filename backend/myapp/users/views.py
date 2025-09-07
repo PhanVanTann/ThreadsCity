@@ -27,7 +27,7 @@ class UserView(APIView):
                 "introduce":request.data.get('introduce')
         }
         if request.FILES.get('avatar'):
-            data['avatar'] = request.FILES.get('avatar')
+            data['avatar'] = request.FILES.get('avatar') 
         result = userService.upDateUser(user_id,data)
         return JsonResponse(result,status=200)
 class UsersView(APIView):
