@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect, useRef, useLayoutEffect } from "react";
 import { MdOutlineArrowBack, MdArrowDownward } from "react-icons/md";
 import { LuSendHorizontal, LuX } from "react-icons/lu";
 import { FaPaperclip, FaRegSmile } from "react-icons/fa";
@@ -57,10 +57,10 @@ export default function ChatWindow({
     setMediaFile(url);
   };
 
-  // === Scroll logic ===
   const scrollToBottomInstant = () => {
-    if (listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
+    const el = listRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
     } else {
       bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
     }
@@ -68,6 +68,15 @@ export default function ChatWindow({
     setShowScrollDown(false);
     setUnseenCount(0);
   };
+
+  // ÉP xuống đáy ngay khi mở thread (mount/đổi người)
+  useLayoutEffect(() => {
+    requestAnimationFrame(() => {
+      scrollToBottomInstant();
+      lastLenRef.current = thread.length; // đánh dấu đã đồng bộ
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [other._id]);
 
   // Theo dõi cuộn để biết khi nào rời đáy
   useEffect(() => {
@@ -85,10 +94,15 @@ export default function ChatWindow({
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Khi có thêm tin nhắn:
-  // - nếu đang ở đáy → auto xuống đáy
-  // - nếu không → tăng badge số lượng mới
+  // Lần đầu dữ liệu messages được load async (từ 0 -> >0) cũng kéo xuống đáy
   useEffect(() => {
+    if (lastLenRef.current === 0 && thread.length > 0) {
+      // lần đầu có dữ liệu
+      requestAnimationFrame(scrollToBottomInstant);
+      lastLenRef.current = thread.length;
+      return;
+    }
+    // Các lần sau: nếu đang ở đáy thì giữ ở đáy, còn không thì tăng badge
     const delta = thread.length - (lastLenRef.current || 0);
     if (delta > 0) {
       if (atBottomRef.current) {
@@ -98,7 +112,7 @@ export default function ChatWindow({
       }
     }
     lastLenRef.current = thread.length;
-  }, [thread.length, other._id]); // đổi đối tượng chat cũng reset tại đây
+  }, [thread.length, other._id]);
 
   const sendNow = () => {
     const t = text.trim();
@@ -133,9 +147,7 @@ export default function ChatWindow({
       <div className="flex-1 min-h-0">
         <div
           ref={listRef}
-          className="
-            h-full p-3 overflow-y-auto space-y-2 scroll-dark
-          "
+          className="h-full p-3 overflow-y-auto space-y-2 scroll-dark"
         >
           {thread.map((m) => {
             const mine = String(m.send_user_id) === meId;
@@ -179,7 +191,7 @@ export default function ChatWindow({
             onClick={scrollToBottomInstant}
             aria-label="Cuộn xuống cuối"
             className="
-              absolute right-30  bottom-24
+              absolute left-1/2 -translate-x-1/2 bottom-24
               flex items-center gap-2
               rounded-full px-3 py-2 shadow-lg
               bg-gray-900 text-white dark:bg-white/10 dark:text-white
@@ -240,14 +252,7 @@ export default function ChatWindow({
             )}
           </div>
 
-          {/* <button
-            type="button"
-            onClick={() => (document.querySelector<HTMLInputElement>("#filePicker")?.click())}
-            className="p-2 rounded-lg hover:bg-gray-100"
-            title="Đính kèm ảnh/video"
-          >
-            <FaPaperclip />
-          </button> */}
+          {/* <button ...><FaPaperclip /></button> */}
           <input id="filePicker" type="file" accept="image/*,video/*" hidden onChange={onFileChange} />
 
           <textarea
