@@ -11,7 +11,6 @@ class PredictTextRequest(BaseModel):
     text:str
 @router.post("/predict_image")
 async def predict_image(req : PredictIMGRequest):
-    
     result = predict_image_service(req.postid,req.url)
     print(result)
     return result

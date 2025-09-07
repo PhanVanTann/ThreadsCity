@@ -71,9 +71,9 @@ def predict_video(video_path, model, name_model, postid):
                 cls_id = int(box.cls[0])
                 label = r.names[cls_id]
 
-                if best_detection and best_detection["label"] == "Violence" and label == "NonViolence":
+                if best_detection and best_detection["label"] == "violence" and label == "non_violence":
                     continue
-                if best_detection and best_detection["label"] == "NonViolence" and label == "Violence":
+                if best_detection and best_detection["label"] == "non_violence" and label == "violence":
                     best_detection = None
 
                 detection = {

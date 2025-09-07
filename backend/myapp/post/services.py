@@ -52,13 +52,13 @@ class CensorshipService(collection):
             return {"success": True, "message": "text censorship completed successfully", "data": result.json()}
         except Exception as e:
             return {
-                "message": "Error in text censorship",
+                "message": "Error in image censorship",
                 "postid": postid,
                 "error": str(e)
             }
     def create_post(self, data):
         user_id = data.get("user_id")
-        text_content = (data.get("text")).strip()
+        text_content = (data.get("text") or " ").strip()
         media_file = data.get("media")
 
         # Upload media (nếu có) và xác định loại
