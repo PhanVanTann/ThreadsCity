@@ -46,31 +46,25 @@ export default function Post({ post }: { post: Post }) {
   const currentUserId = useSelector((s: any) => s.auth.login.currentUser?.user_id) as string | undefined;
   const isMyPost = currentUserId === post.user_id;
 
-  // Dùng postId là string cho nhất quán key
   const postId = String(post._id);
 
-  // Lấy state comment theo key chuẩn hóa
   const commentsState =
     useSelector((s: any) => s.comment.byPost?.[postId]) ||
     ({ data: null, isFetching: false, error: false, success: false } as any);
   const { data, isFetching, error, success } = commentsState;
   const comments: any[] = data?.data ?? [];
 
-  // Số bình luận hiển thị
   const [commentCount, setCommentCount] = useState<number>(post.total_comment ?? 0);
 
-  // Đổi post → reset số
   useEffect(() => {
     setCommentCount(post.total_comment ?? 0);
   }, [postId, post.total_comment]);
 
-  // Mở modal → fetch comment (để đảm bảo có dữ liệu và hiện ngay)
   useEffect(() => {
     if (!openComment) return;
     GetComments(postId, dispatch);
   }, [openComment, postId, dispatch]);
 
-  // Khi fetch xong → đồng bộ số theo length thực tế
   useEffect(() => {
     if (success && Array.isArray(comments)) {
       setCommentCount(comments.length);
@@ -79,7 +73,6 @@ export default function Post({ post }: { post: Post }) {
 
   const userPost = useSelector((s: any) => s.user.getUserByCommentId.data?.[postId]);
 
-  // --- MEDIA URL ---
   const mediaUrl = useMemo(() => {
     const raw = post.media as unknown;
     if (Array.isArray(raw)) return raw.find(Boolean) ?? '';
@@ -88,13 +81,11 @@ export default function Post({ post }: { post: Post }) {
 
   const isVideo = mediaUrl ? isVideoUrl(mediaUrl) : false;
 
-  // --- VIDEO REFS & STATE ---
   const outerVideoRef = useRef<HTMLVideoElement | null>(null);
   const modalVideoRef = useRef<HTMLVideoElement | null>(null);
   const lastTimeRef = useRef<number>(0);
   const outerBoxRef = useRef<HTMLDivElement | null>(null);
 
-  // --- Scroll lock (fix không nhảy về đầu trang) ---
   const lockScrollYRef = useRef(0);
 
   const handleClickProfileUser = useCallback(
@@ -104,7 +95,6 @@ export default function Post({ post }: { post: Post }) {
     [currentUserId, navigate]
   );
 
-  // Lấy user của post (cache per post)
   useEffect(() => {
     if (post.user_id && postId) {
       // @ts-ignore
@@ -112,7 +102,6 @@ export default function Post({ post }: { post: Post }) {
     }
   }, [post.user_id, postId, dispatch]);
 
-  // ----- LIKE STATE  -----
   const initialLiked = useMemo(() => {
     return !!currentUserId && Array.isArray(post.list_user_heart) && post.list_user_heart.includes(currentUserId);
   }, [currentUserId, post.list_user_heart]);
@@ -120,20 +109,18 @@ export default function Post({ post }: { post: Post }) {
   const [liked, setLiked] = useState<boolean>(initialLiked);
   const [loveCount, setLoveCount] = useState<number>(post.total_love ?? 0);
 
-  // Reset khi đổi post
   useEffect(() => {
     setLiked(initialLiked);
     setLoveCount(post.total_love ?? 0);
-  }, [postId]); // cố ý chỉ phụ thuộc id
+  }, [postId]);
 
-  // Chống double-click & out-of-order
   const [pending, setPending] = useState(false);
   const opRef = useRef(0);
 
   const handleToggleLike = useCallback(async () => {
     if (!currentUserId || pending) return;
 
-    const next = !liked; // Optimistic
+    const next = !liked;
     setPending(true);
     const myOp = ++opRef.current;
 
@@ -155,7 +142,6 @@ export default function Post({ post }: { post: Post }) {
     }
   }, [currentUserId, dispatch, liked, postId, pending]);
 
-  // --- LOGIC VIDEO ---
   useEffect(() => {
     if (!isVideo) return;
 
@@ -228,12 +214,10 @@ export default function Post({ post }: { post: Post }) {
     setOpenComment(true);
   }, []);
 
-  // ====== GỬI COMMENT ======
-  // Reply trong list: +1 ngay + refetch để thấy comment mới
   const handleReply = useCallback(
     async (text: string, parentId: string) => {
       if (!text.trim()) return;
-      setCommentCount((c) => c + 1); // optimistic
+      setCommentCount((c) => c + 1);
       await CreateComments(
         {
           user_id: currentUserId,
@@ -243,31 +227,26 @@ export default function Post({ post }: { post: Post }) {
         },
         dispatch
       );
-      GetComments(postId, dispatch); // refetch để list hiển thị ngay
+      GetComments(postId, dispatch);
     },
     [currentUserId, postId, dispatch]
   );
 
-  // Comment gốc ở CreateComment: +1 ngay + refetch
   const handleCreatedRootComment = useCallback(() => {
     setCommentCount((c) => c + 1);
     GetComments(postId, dispatch);
   }, [postId, dispatch]);
 
-  // ===== Khóa scroll nền bằng position:fixed (không nhảy về top) =====
   useEffect(() => {
     if (!openComment) return;
 
     const html = document.documentElement;
     const body = document.body;
 
-    // 1) Ghi nhớ vị trí hiện tại
     lockScrollYRef.current = window.scrollY || window.pageYOffset || 0;
 
-    // 2) Tính độ rộng scrollbar để bù
     const scrollbarW = window.innerWidth - (html?.clientWidth || 0);
 
-    // 3) Khóa scroll nền
     html.style.overflowY = 'hidden';
     body.style.position = 'fixed';
     body.style.top = `-${lockScrollYRef.current}px`;
@@ -278,7 +257,6 @@ export default function Post({ post }: { post: Post }) {
     if (scrollbarW > 0) body.style.paddingRight = `${scrollbarW}px`;
 
     return () => {
-      // Mở khóa + khôi phục vị trí
       html.style.overflowY = '';
       body.style.position = '';
       body.style.top = '';
@@ -290,6 +268,36 @@ export default function Post({ post }: { post: Post }) {
       window.scrollTo(0, lockScrollYRef.current);
     };
   }, [openComment]);
+
+
+  const MAIN_MAX_CHARS  = 220; 
+  const MODAL_MAX_CHARS = 80; 
+
+  const [expandMainText, setExpandMainText]   = useState(false);
+  const [expandModalText, setExpandModalText] = useState(false);
+
+  const smartTruncate = (text: string, maxChars: number) => {
+    if (!text) return text;
+    if (text.length <= maxChars) return text;
+    const slice = text.slice(0, maxChars);
+    const lastSpace = slice.lastIndexOf(" ");
+    const cut = lastSpace > maxChars * 0.5 ? slice.slice(0, lastSpace) : slice;
+    return cut.trimEnd() + "…";
+  };
+
+  const isLongMainText  = !!post.text && post.text.length > MAIN_MAX_CHARS;
+  const isLongModalText = !!post.text && post.text.length > MODAL_MAX_CHARS;
+
+  const mainDisplayText = useMemo(
+    () => (expandMainText || !isLongMainText ? post.text || "" : smartTruncate(post.text!, MAIN_MAX_CHARS)),
+    [expandMainText, isLongMainText, post.text]
+  );
+
+  const modalDisplayText = useMemo(
+    () => (expandModalText || !isLongModalText ? post.text || "" : smartTruncate(post.text!, MODAL_MAX_CHARS)),
+    [expandModalText, isLongModalText, post.text]
+  );
+  
 
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
@@ -333,8 +341,19 @@ export default function Post({ post }: { post: Post }) {
       {/* Content */}
       <div className="w-full flex flex-col gap-3">
         {post.text && (
-          <div className="w-full ">
-            <p className="text-md font-medium text-white whitespace-pre-wrap break-words">{post.text}</p>
+          <div className="w-full">
+            <p className="text-md font-medium text-white whitespace-pre-wrap break-words">
+              {mainDisplayText}
+            </p>
+            {isLongMainText && (
+              <button
+                type="button"
+                onClick={() => setExpandMainText((v) => !v)}
+                className="mt-2 text-sm text-gray-400 hover:text-white"
+              >
+                {expandMainText ? "Thu gọn" : "Xem thêm"}
+              </button>
+            )}
           </div>
         )}
 
@@ -430,14 +449,23 @@ export default function Post({ post }: { post: Post }) {
                     </span>
                     <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
                   </div>
-                  <div className="p-2 text-white cursor-pointer">
-                    <AiOutlineMore size={20} />
-                  </div>
+                  
                 </div>
 
                 {post.text && (
                   <div className="w-full py-4 border-b border-[#3d3d3d]">
-                    <p className="text-md font-medium text-white whitespace-pre-line">{post.text}</p>
+                    <p className="text-md font-medium text-white whitespace-pre-line">
+                      {modalDisplayText}
+                    </p>
+                    {isLongModalText && (
+                      <button
+                        type="button"
+                        onClick={() => setExpandModalText((v) => !v)}
+                        className="mt-2 text-sm text-gray-400 hover:text-white" // khác màu với feed
+                      >
+                        {expandModalText ? "Thu gọn" : "Xem thêm"}
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -471,11 +499,10 @@ export default function Post({ post }: { post: Post }) {
                   )}
                 </div>
 
-                {/* Sau khi tạo comment gốc: +1 & refetch để hiển thị ngay */}
                 <CreateComment
                   post_id={postId}
                   isActive={openComment}
-                  // @ts-ignore - component .js chấp nhận prop này
+                  // @ts-ignore
                   onCreated={handleCreatedRootComment}
                 />
               </div>

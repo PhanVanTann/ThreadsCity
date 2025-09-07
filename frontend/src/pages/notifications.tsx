@@ -114,7 +114,7 @@ export default function Notifications() {
   const handleClick = (n: any) => {
     if (!n) return;
 
-    // Nếu vẫn chưa đọc (theo store & session), click cũng sẽ đánh dấu đọc ngay
+  
     const id = getId(n);
     if (id && isUnread(n) && !readLocal.has(id)) {
       doMarkRead(n);
