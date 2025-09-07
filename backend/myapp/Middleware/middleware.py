@@ -1,7 +1,7 @@
 import jwt
 from django.conf import settings
 from django.http import JsonResponse
-from utils.jwt import decode_token
+from utils.jwt import decode_token  
 
 class Middleware:
     def __init__(self,get_response):

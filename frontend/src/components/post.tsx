@@ -252,7 +252,6 @@ export default function Post({ post }: { post: Post }) {
     }
     setOpenComment(true);
   }, []);
-
   return (
     <div className="w-[700px] relative flex flex-col items-start mt-5 bg-gray-100 dark:bg-[#181818] gap-5 border border-[#3d3d3d] rounded-lg p-4">
       {/* Header */}
@@ -295,8 +294,8 @@ export default function Post({ post }: { post: Post }) {
       {/* Content */}
       <div className="w-full flex flex-col gap-3">
         {post.text && (
-          <div className="w-full">
-            <p className="text-md font-medium text-white whitespace-pre-line">{post.text}</p>
+          <div className="w-full ">
+            <p className="text-md font-medium text-white whitespace-pre-wrap break-words">{post.text}</p>
           </div>
         )}
 
@@ -397,14 +396,12 @@ export default function Post({ post }: { post: Post }) {
                     </span>
                     <span className="text-sm text-gray-300 mr-2">{formatTimeAgo(post.created_at)}</span>
                   </div>
-                  <div className="p-2 text-white cursor-pointer">
-                    <AiOutlineMore size={20} />
-                  </div>
+                  
                 </div>
 
                 {post.text && (
                   <div className="w-full py-4 border-b border-[#3d3d3d]">
-                    <p className="text-md font-medium text-white whitespace-pre-line">{post.text}</p>
+                    <p className="text-md font-medium text-white whitespace-pre-wrap break-words">{post.text}</p>
                   </div>
                 )}
 

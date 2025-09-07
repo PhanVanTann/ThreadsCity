@@ -127,7 +127,7 @@ export default function ProfileUser() {
   }
 
   return (
-    <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000] ">
+    <div className="w-[700px] mt-5 flex flex-col border border-[#3d3d3d] rounded-[20px] bg-gray-100 dark:bg-[#000]  ">
       <div className="flex rounded-[20px] bg-black justify-between w-full items-start p-2">
         <img
           src={userData?.avatar || "https://i.pravatar.cc/150?img=1"}
@@ -180,6 +180,8 @@ export default function ProfileUser() {
               {follower.length} người theo dõi
             </span>
           </div>
+          <div className="text-white text-sm  mb-3 whitespace-pre-wrap break-words">{userData?.introduce}</div>
+
         </div>
 
         {userId === currentUserId ? (
@@ -200,7 +202,6 @@ export default function ProfileUser() {
         )}
   
       </div>
-      <div className="text-white text-sm text-center mb-3">{userData?.introduce}</div>
  
       <div className="flex sticky top-0 bg-black z-30">
         <div

@@ -117,9 +117,7 @@ function CommentComponent({ comment, onReply, isActive, onShowPicker }: CommentP
           <span className="text-[14px] text-white font-bold mr-2">{fullName}</span>
           <span className="text-[12px] text-gray-300 mr-2">{timeAgo}</span>
         </div>
-        <button type="button" className="p-2 text-white cursor-pointer" aria-label="More">
-          <AiOutlineMore size={20} />
-        </button>
+      
       </div>
 
       {/* Content */}

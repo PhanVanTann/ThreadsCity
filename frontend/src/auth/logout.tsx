@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BiLogOut } from "react-icons/bi";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "src/redux/api/apiRequestAuth";
@@ -14,7 +15,7 @@ export default function Logout() {
     }
   return (
     <div onClick={handleLogout}>
-        Đăng xuất
+         <BiLogOut size={24} />
     </div>
   );
 }

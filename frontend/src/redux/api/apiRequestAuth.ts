@@ -66,10 +66,18 @@ export const registerUser = async (user: any, dispatch: any, navigate: any) => {
     
     toast.promise(d, {
       loading: "Đang đăng ký...",
-      success: "Đăng ký thành công! vui lòng kiểm tra email để xác thực tài khoản",
+      
       error: "Đăng ký thất bại!",
     });
     const res = await d
+    if (!res.data.success)
+    { 
+      toast.error(res.data.error)
+    }
+    else
+    {
+      toast.success("Đăng kí thành công, vui lòng kiểm tra email để xác thực tài khoản!")
+    }
     console.log("register res", res);
     dispatch(registerSuccess(res.data));
     navigate('/login')
