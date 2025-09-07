@@ -106,6 +106,7 @@ export default function Postmodel({ open, onClose }: Props) {
         dispatch,
         navigate
       );
+      
       // Nếu cần reload list post:
       // await getlistPost(dispatch);
     } finally {
@@ -114,7 +115,6 @@ export default function Postmodel({ open, onClose }: Props) {
       setFiles([]); // sẽ tự cleanup previews nhờ useEffect ở trên
     }
   }
-
   if (!open) return null;
 
   return (

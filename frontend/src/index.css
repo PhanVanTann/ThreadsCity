@@ -17,3 +17,13 @@ body {
 
 /* Firefox */
 .scroll-dark { scrollbar-width: fat; scrollbar-color: #9f9f9f transparent; }
+/* Ẩn scrollbar nhưng vẫn cho phép cuộn */
+.scroll-hidden {
+  /* nếu chỉ muốn dọc: dùng overflow-y thay vì overflow */
+  overflow: auto;                 /* hoặc: overflow-y: auto; */
+  -ms-overflow-style: none;       /* IE và Edge cũ */
+  scrollbar-width: none;          /* Firefox */
+}
+.scroll-hidden::-webkit-scrollbar {
+  display: none;                  /* Chrome, Safari, Edge Chromium */
+}
