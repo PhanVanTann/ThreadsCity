@@ -19,7 +19,7 @@ const LoadingPost = () => {
   const navigate = useNavigate()
   useEffect(() => {
     if (success) {
-      toast.success('Đăng bài thành công!')
+      toast.success('kiểm duyệt thành công!')
     }
   }, [success, loading])
   console.log(dataPost,"hhh")
