@@ -65,8 +65,8 @@
 - Trang thông báo chi tiết
 
 ### 🤖 AI Kiểm duyệt Nội dung
-- **Kiểm duyệt hình ảnh**: Phân loại ảnh NSFW/phù hợp bằng mô hình deep learning (PyTorch + Transformers)
-- **Kiểm duyệt văn bản**: Phát hiện nội dung vi phạm trong bài viết
+- **Kiểm duyệt hình ảnh & video**: Tự động phát hiện nội dung nhạy cảm (vũ khí, bạo lực, thuốc lá) sử dụng mô hình **YOLOv8** (Ultralytics).
+- **Kiểm duyệt văn bản**: Tự động nhận diện và ẩn (mask) các từ ngữ độc hại trong bài viết bằng mô hình **PhoBERT** (Transformers).
 - Bài viết cần kiểm duyệt trước khi hiển thị công khai
 - Trang Admin quản lý bài viết chờ duyệt / đã duyệt
 
@@ -112,8 +112,8 @@
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
 │   MongoDB    │  │  Cloudinary  │  │  AI Service  │
 │  (Database)  │  │   (Media)    │  │  (FastAPI)   │
-│              │  │              │  │  PyTorch +   │
-│              │  │              │  │ Transformers │
+│              │  │              │  │   YOLOv8 +   │
+│              │  │              │  │   PhoBERT    │
 └──────────────┘  └──────────────┘  └──────────────┘
 ```
 
@@ -156,11 +156,12 @@
 | Công nghệ | Mô tả |
 |:---|:---|
 | FastAPI | API framework cho AI service |
-| PyTorch | Deep learning framework |
-| TorchVision | Computer vision models |
-| Transformers (HuggingFace) | Pre-trained NLP/CV models |
-| OpenCV | Image processing |
-| NumPy / Pandas | Data processing |
+| YOLOv8 | Object Detection (Vũ khí, bạo lực, thuốc lá) |
+| Ultralytics | Thư viện triển khai YOLOv8 |
+| PhoBERT | NLP Model kiểm duyệt văn bản tiếng Việt |
+| Transformers | Thư viện nền tảng cho PhoBERT |
+| PyTorch | Framework nền tảng cho AI models |
+| OpenCV | Xử lý hình ảnh và dữ liệu video |
 
 ### Infrastructure
 | Công nghệ | Mô tả |
@@ -243,8 +244,8 @@ ThreadsCity/
 │   │   ├── routers/            # API routes
 │   │   └── services/           # Business logic
 │   ├── models/
-│   │   ├── predict_img/        # Image classification model
-│   │   └── predict_text/       # Text classification model
+│   │   ├── predict_img/        # YOLOv8 Image/Video Moderation
+│   │   └── predict_text/       # PhoBERT Text Moderation
 │   ├── inputs/                 # Sample inputs
 │   ├── utils/                  # Utilities
 │   ├── main.py
